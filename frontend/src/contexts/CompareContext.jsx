@@ -8,6 +8,8 @@ export const useCompare = () => {
 };
 
 export const CompareProvider = ({ children }) => {
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  
   const [compareList, setCompareList] = useState(() => {
     try {
       const saved = localStorage.getItem('compareList');
@@ -62,6 +64,8 @@ export const CompareProvider = ({ children }) => {
     removeFromCompare,
     clearCompare,
     isInCompare,
+    isSearchOpen,
+    setIsSearchOpen,
   };
 
   return (

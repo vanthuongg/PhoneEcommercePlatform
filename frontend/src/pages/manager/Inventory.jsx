@@ -182,7 +182,7 @@ const Inventory = () => {
                 placeholder="Tìm điện thoại theo tên, mã..."
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                className="w-full pl-10 pr-4 py-3 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full pl-10 pr-4 py-3 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary"
               />
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             </div>
@@ -191,7 +191,7 @@ const Inventory = () => {
               <select
                 value={categoryFilter}
                 onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }}
-                className="px-4 py-3 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary"
+                className="px-4 py-3 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <option value="">Tất cả danh mục</option>
                 {categories.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
@@ -294,8 +294,8 @@ const Inventory = () => {
             <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-800">
               <p className="text-xs font-bold text-gray-500">Trang {page} / {pagination.pages}</p>
               <div className="flex gap-2">
-                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1} className="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 font-bold text-xs disabled:opacity-40 hover:bg-gray-200">Trang Trước</button>
-                <button onClick={() => setPage(p => Math.min(pagination.pages, p + 1))} disabled={page >= pagination.pages} className="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 font-bold text-xs disabled:opacity-40 hover:bg-gray-200">Trang Sau</button>
+                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1} className="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold text-xs disabled:opacity-40 hover:bg-gray-200 dark:hover:bg-gray-700">Trang Trước</button>
+                <button onClick={() => setPage(p => Math.min(pagination.pages, p + 1))} disabled={page >= pagination.pages} className="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold text-xs disabled:opacity-40 hover:bg-gray-200 dark:hover:bg-gray-700">Trang Sau</button>
               </div>
             </div>
           )}
@@ -392,7 +392,7 @@ const Inventory = () => {
                                 newV[i].stock = e.target.value;
                                 setEditStock({ ...editStock, variantsState: newV });
                               }}
-                              className="w-20 p-1 border rounded"
+                              className="w-20 p-1 border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white dark:border-gray-700"
                             />
                           </td>
                           <td className="p-2 text-right">

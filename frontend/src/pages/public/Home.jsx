@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { productAPI, bannerAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
+import { useCompare } from '../../contexts/CompareContext';
 import ProductCard from '../../components/product/ProductCard';
 import {
   ArrowRight, Star, Truck, RefreshCw, ChevronLeft, ChevronRight,
   Sparkles, Zap, Flame, Headphones, ShieldCheck, Award,
-  Smartphone, Watch, BatteryCharging, Shield, Tablet, ArrowRightLeft, Gift
+  Smartphone, Watch, BatteryCharging, Shield, Tablet, ArrowRightLeft, Gift, Scale
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -31,16 +32,42 @@ const FlashSaleCard = ({ product }) => {
   const stock = product.stock || Math.floor(Math.random() * 20) + 5;
   const total = sold + stock;
   const percent = Math.min(100, Math.round((sold / total) * 100));
+  const { isInCompare, addToCompare, removeFromCompare } = useCompare();
+
+  const handleToggleCompare = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isInCompare(product._id || product.id)) {
+      removeFromCompare(product._id || product.id);
+    } else {
+      addToCompare(product);
+    }
+  };
 
   return (
     <Link to={`/product/${product._id || product.id}`} className="group relative flex flex-col h-full bg-white dark:bg-gray-800 rounded-3xl border border-red-100 dark:border-red-900/30 overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-red-500/10 hover:-translate-y-1.5">
-      <div className="absolute top-3 left-3 z-10">
+      <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
         {discountPercent > 0 && (
           <span className="bg-gradient-to-r from-red-500 to-orange-500 text-white font-black text-[11px] px-2 py-1 rounded-xl shadow-md flex items-center gap-1 animate-pulse">
             <Zap size={10} className="fill-white" /> -{discountPercent}%
           </span>
         )}
       </div>
+
+      {/* Compare button */}
+      <button
+        type="button"
+        onClick={handleToggleCompare}
+        className={`absolute top-3 right-3 z-10 w-8 h-8 rounded-xl flex items-center justify-center transition-all ${
+          isInCompare(product._id || product.id)
+            ? 'bg-blue-50 dark:bg-blue-900/40 text-blue-500 scale-110 shadow-md'
+            : 'bg-white/90 dark:bg-gray-800/90 backdrop-blur-md text-gray-400 hover:text-blue-500 hover:scale-110 shadow-sm opacity-0 group-hover:opacity-100'
+        }`}
+        title={isInCompare(product._id || product.id) ? "Bỏ so sánh" : "Thêm vào so sánh"}
+      >
+        <Scale size={16} className={isInCompare(product._id || product.id) ? 'stroke-[2.5]' : ''} />
+      </button>
+
       <div className="relative aspect-square p-6 bg-gradient-to-br from-red-50/50 to-orange-50/50 dark:from-red-900/10 dark:to-orange-900/10 flex items-center justify-center">
         <img src={product.images?.[0] || 'https://via.placeholder.com/400?text=Phone'} alt={product.name} className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal group-hover:scale-110 transition-transform duration-500" />
       </div>
@@ -73,6 +100,7 @@ const FlashSaleCard = ({ product }) => {
 /* ─────────── Home ─────────── */
 const Home = () => {
   const { user } = useAuth();
+  const { setIsSearchOpen } = useCompare();
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [flashSaleProducts, setFlashSaleProducts] = useState([]);
   const [banners, setBanners] = useState([]);
@@ -445,9 +473,12 @@ const Home = () => {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
         <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900/50 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-center gap-4 text-center sm:text-left">
           <p className="text-green-800 dark:text-green-400 font-semibold">Bạn chưa biết chọn máy nào? — Dùng công cụ so sánh của chúng tôi</p>
-          <Link to="/compare" className="bg-green-700 hover:bg-green-800 text-white px-5 py-2 rounded-lg font-bold text-sm shadow-md transition-all flex items-center gap-2">
+          <button 
+            onClick={() => setIsSearchOpen(true)} 
+            className="bg-green-700 hover:bg-green-800 text-white px-5 py-2 rounded-lg font-bold text-sm shadow-md transition-all flex items-center gap-2"
+          >
             So sánh điện thoại <ArrowRightLeft size={16} />
-          </Link>
+          </button>
         </div>
       </section>
 

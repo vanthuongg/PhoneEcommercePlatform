@@ -213,6 +213,11 @@ const App = () => {
           <DashboardLayout><AdminAudit /></DashboardLayout>
         </ProtectedRoute>
       } />
+      <Route path="/admin/inventory" element={
+        <ProtectedRoute roles={['admin']}>
+          <DashboardLayout><ManagerInventory /></DashboardLayout>
+        </ProtectedRoute>
+      } />
 
       {/* Manager routes */}
       <Route path="/manager" element={

@@ -16,15 +16,15 @@ const RatingStars = ({ rating = 0, size = 16, showNumber = false, count = 0 }) =
               key={index}
               size={size}
               className={`${
-                isFull || isHalf ? 'text-amber-400 fill-amber-400' : 'text-gray-300 dark:text-gray-700'
-              } transition-colors`}
+                isFull || isHalf ? 'text-amber-400 fill-amber-400' : 'text-slate-300 dark:text-slate-700'
+              } transition-colors drop-shadow-sm`}
             />
           );
         })}
       </div>
       {showNumber && (
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">
-          {rating > 0 ? rating.toFixed(1) : 'Chưa có đánh giá'} {count > 0 && `(${count})`}
+        <span className="text-sm font-medium text-slate-600 dark:text-slate-400 ml-1.5">
+          {rating > 0 ? rating.toFixed(1) : 'Chưa có đánh giá'} {count > 0 && <span className="text-slate-400 dark:text-slate-500">({count})</span>}
         </span>
       )}
     </div>

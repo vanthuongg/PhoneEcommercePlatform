@@ -9,7 +9,7 @@ const CategoryMenu = () => {
   const [suggestedProducts, setSuggestedProducts] = useState({});
 
   const brandLinks = [
-    { name: 'iPhone', brand: 'Apple', path: '/shop?brand=Apple', icon: Smartphone, color: 'text-gray-900 dark:text-gray-100' },
+    { name: 'iPhone', brand: 'Apple', path: '/shop?brand=Apple', icon: Smartphone, color: 'text-slate-900 dark:text-slate-100' },
     { name: 'Samsung', brand: 'Samsung', path: '/shop?brand=Samsung', icon: Smartphone, color: 'text-blue-600' },
     { name: 'Xiaomi', brand: 'Xiaomi', path: '/shop?brand=Xiaomi', icon: Smartphone, color: 'text-orange-500' },
     { name: 'Oppo', brand: 'Oppo', path: '/shop?brand=Oppo', icon: Smartphone, color: 'text-emerald-600' },
@@ -38,7 +38,7 @@ const CategoryMenu = () => {
     new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price || 0);
 
   return (
-    <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 shadow-sm transition-colors relative z-40">
+    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800/50 shadow-sm transition-colors relative z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between text-sm font-medium py-1">
         {/* Danh mục Brands và Phụ kiện */}
         {/* Đổi sang lg:overflow-visible để dropdown absolute không bị cắt khúc */}
@@ -63,7 +63,7 @@ const CategoryMenu = () => {
               >
                 <Link
                   to={item.path}
-                  className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors whitespace-nowrap font-semibold text-xs sm:text-sm"
+                  className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-500 transition-colors whitespace-nowrap font-semibold text-xs sm:text-sm"
                 >
                   <Icon size={16} className={`${item.color} group-hover:scale-110 transition-transform`} />
                   <span>{item.name}</span>
@@ -71,18 +71,18 @@ const CategoryMenu = () => {
 
                 {/* Dropdown Gợi ý sản phẩm dạng List Siêu Nhỏ (ẩn trên mobile, chỉ hiện Desktop) */}
                 {isHovered && (
-                  <div className="hidden lg:block absolute top-[100%] left-1/2 -translate-x-1/2 w-[280px] bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-xl animate-in fade-in zoom-in-95 duration-150 py-2">
+                  <div className="hidden lg:block absolute top-[100%] left-1/2 -translate-x-1/2 w-[280px] bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl shadow-glass dark:shadow-glass-dark animate-in fade-in zoom-in-95 duration-150 py-2">
                     {/* Mũi tên nhỏ chỉ lên trên */}
-                    <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white dark:bg-gray-900 border-l border-t border-gray-100 dark:border-gray-800 rotate-45"></div>
+                    <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white dark:bg-slate-900 border-l border-t border-slate-100 dark:border-slate-800 rotate-45"></div>
                     
-                    <div className="relative px-3 pb-2 pt-1 border-b border-gray-50 dark:border-gray-800/50 mb-1 flex justify-between items-center">
-                       <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">
+                    <div className="relative px-3 pb-2 pt-1 border-b border-slate-50 dark:border-slate-800/50 mb-1 flex justify-between items-center">
+                       <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">
                          Gợi ý {item.brand}
                        </span>
                        <Link 
                          to={item.path} 
                          onClick={handleMouseLeave}
-                         className="text-[10px] text-primary hover:underline font-bold"
+                         className="text-[10px] text-primary-600 hover:underline font-bold"
                        >
                          Xem thêm
                        </Link>
@@ -95,9 +95,9 @@ const CategoryMenu = () => {
                             <div 
                               key={prod._id || prod.id}
                               onClick={() => { setHoveredBrand(null); navigate(`/product/${prod._id || prod.id}`); }}
-                              className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/80 cursor-pointer transition-colors group/item"
+                              className="flex items-center gap-2.5 p-2 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/80 cursor-pointer transition-colors group/item"
                             >
-                              <div className="w-10 h-10 bg-white dark:bg-gray-800 rounded-lg p-1 border border-gray-100 dark:border-gray-700 shrink-0">
+                              <div className="w-10 h-10 bg-white dark:bg-slate-800 rounded-xl p-1 border border-slate-100 dark:border-slate-700 shrink-0">
                                 <img 
                                   src={prod.images?.[0] || prod.image || 'https://via.placeholder.com/100'} 
                                   alt={prod.name} 
@@ -105,7 +105,7 @@ const CategoryMenu = () => {
                                 />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <h4 className="text-[11px] font-bold text-gray-800 dark:text-gray-200 truncate group-hover/item:text-primary transition-colors">
+                                <h4 className="text-[11px] font-bold text-slate-800 dark:text-slate-200 truncate group-hover/item:text-primary-600 transition-colors">
                                   {prod.name}
                                 </h4>
                                 <div className="flex items-center gap-1.5 mt-0.5">
@@ -113,7 +113,7 @@ const CategoryMenu = () => {
                                     {formatPrice(prod.salePrice > 0 ? prod.salePrice : prod.price)}
                                   </span>
                                   {prod.salePrice > 0 && prod.salePrice < prod.price && (
-                                    <span className="text-[9px] text-gray-400 line-through">
+                                    <span className="text-[9px] text-slate-400 line-through">
                                       {formatPrice(prod.price)}
                                     </span>
                                   )}
@@ -122,13 +122,13 @@ const CategoryMenu = () => {
                             </div>
                           ))
                         ) : (
-                           <div className="py-4 text-center text-[10px] text-gray-400">
+                           <div className="py-4 text-center text-[10px] text-slate-400">
                              Chưa có sản phẩm nào
                            </div>
                         )
                       ) : (
                         <div className="py-4 flex justify-center">
-                          <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                          <div className="w-4 h-4 border-2 border-primary-500/30 border-t-primary-500 rounded-full animate-spin"></div>
                         </div>
                       )}
                     </div>
@@ -140,7 +140,7 @@ const CategoryMenu = () => {
         </div>
 
         {/* Tiện ích Sàn TMĐT */}
-        <div className="hidden lg:flex items-center space-x-6 text-xs text-gray-500 dark:text-gray-400 shrink-0">
+        <div className="hidden lg:flex items-center space-x-6 text-xs text-slate-500 dark:text-slate-400 shrink-0">
           <span className="flex items-center gap-1.5 font-medium"><Truck size={15} className="text-emerald-500" /> Miễn phí vận chuyển</span>
           <span className="flex items-center gap-1.5 font-medium"><ShieldCheck size={15} className="text-blue-500" /> Bảo hành 12 tháng</span>
           <span className="flex items-center gap-1.5 font-medium"><Gift size={15} className="text-purple-500" /> Voucher giảm giá</span>

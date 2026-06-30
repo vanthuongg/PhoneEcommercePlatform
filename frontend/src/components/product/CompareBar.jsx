@@ -5,16 +5,14 @@ import CompareModal from './CompareModal';
 import ProductSearchModal from './ProductSearchModal';
 
 const CompareBar = () => {
-  const { compareList, removeFromCompare, clearCompare } = useCompare();
+  const { compareList, removeFromCompare, clearCompare, isSearchOpen, setIsSearchOpen } = useCompare();
   const [isExpanded, setIsExpanded] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-
-  if (compareList.length === 0) return null;
 
   return (
     <>
-      <div className={`fixed bottom-0 left-0 right-0 z-40 transition-transform duration-300 ${isExpanded ? 'translate-y-0' : 'translate-y-[calc(100%-48px)]'}`}>
+      {compareList.length > 0 && (
+        <div className={`fixed bottom-0 left-0 right-0 z-40 transition-transform duration-300 ${isExpanded ? 'translate-y-0' : 'translate-y-[calc(100%-48px)]'}`}>
         <div className="container mx-auto max-w-5xl px-4">
           <div className="bg-white dark:bg-gray-800 rounded-t-2xl shadow-[0_-8px_30px_rgb(0,0,0,0.12)] border border-gray-200 dark:border-gray-700 overflow-hidden">
             {/* Header / Toggle */}
@@ -81,7 +79,7 @@ const CompareBar = () => {
                       ) : (
                         <div 
                           className="w-full h-full flex items-center justify-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded-xl transition-colors"
-                          onClick={() => setSearchOpen(true)}
+                          onClick={() => setIsSearchOpen(true)}
                         >
                           <span className="text-gray-400 text-sm flex items-center gap-2"><span className="text-lg">+</span> Thêm sản phẩm</span>
                         </div>
@@ -105,12 +103,13 @@ const CompareBar = () => {
           </div>
         </div>
       </div>
+      )}
 
-      <CompareModal 
+      <CompareModal  
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
       />
-      <ProductSearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+      <ProductSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </>
   );
 };

@@ -17,6 +17,7 @@ const adminLinks = [
   { label: 'Khuyến mãi', path: '/admin/vouchers', icon: Gift },
   { label: 'Banner CMS', path: '/admin/banners', icon: Image },
   { label: 'Đơn hàng', path: '/admin/orders', icon: Package },
+  { label: 'Tồn kho', path: '/admin/inventory', icon: Store },
   { label: 'Hỗ trợ Ticket', path: '/admin/tickets', icon: HelpCircle },
   { label: 'Nhật ký Audit', path: '/admin/audit', icon: FileText },
   { label: 'Cài đặt', path: '/admin/settings', icon: Settings },
@@ -82,13 +83,13 @@ const AdminSidebar = () => {
                     `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group ${
                       isActive
                         ? 'bg-primary-600 text-white shadow-md shadow-primary-500/20 font-bold'
-                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
+                        : 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800'
                     }`
                   }
                 >
                   {({ isActive }) => (
                     <>
-                      <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`} />
+                      <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white'}`} />
                       <span className="flex-1 truncate">{link.label}</span>
                       {isActive && <ChevronRight className="w-4 h-4 text-white shrink-0" />}
                     </>
@@ -104,13 +105,13 @@ const AdminSidebar = () => {
       <div className="p-3 border-t border-gray-100 dark:border-gray-800 space-y-1 bg-gray-50/50 dark:bg-gray-900">
         <button 
           onClick={toggleTheme}
-          className="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          className="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-bold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
         >
           {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-500" /> : <Moon className="w-4 h-4 text-indigo-500" />}
-          <span>Chế độ {theme === 'dark' ? 'Sáng' : 'Tối'}</span>
+          <span>Chế độ Sáng / Tối</span>
         </button>
 
-        <NavLink to="/" className="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+        <NavLink to="/" className="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-bold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
           <Store className="w-4 h-4 text-emerald-500" />
           <span>Về Sàn bán hàng</span>
         </NavLink>

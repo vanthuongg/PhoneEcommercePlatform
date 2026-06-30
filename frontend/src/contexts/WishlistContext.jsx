@@ -1,9 +1,14 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
+import { useAuth } from './AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const WishlistContext = createContext(null);
 
 export const WishlistProvider = ({ children }) => {
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
   const [wishlist, setWishlist] = useState(() => {
     const stored = localStorage.getItem('wishlist');
     return stored ? JSON.parse(stored) : [];
@@ -14,6 +19,12 @@ export const WishlistProvider = ({ children }) => {
   }, [wishlist]);
 
   const toggleWishlist = useCallback((product) => {
+    if (!isAuthenticated) {
+      toast.error('Vui lòng đăng nhập để lưu sản phẩm yêu thích!');
+      navigate('/login');
+      return;
+    }
+
     setWishlist((prev) => {
       const exists = prev.some((item) => item._id === product._id);
       if (exists) {
@@ -24,12 +35,17 @@ export const WishlistProvider = ({ children }) => {
         return [...prev, { ...product, addedAt: new Date().toISOString() }];
       }
     });
-  }, []);
+  }, [isAuthenticated, navigate]);
 
   const removeFromWishlist = useCallback((productId) => {
+    if (!isAuthenticated) {
+      toast.error('Vui lòng đăng nhập để xóa sản phẩm yêu thích!');
+      navigate('/login');
+      return;
+    }
     setWishlist((prev) => prev.filter((item) => item._id !== productId));
     toast.success('Đã xóa khỏi danh sách yêu thích');
-  }, []);
+  }, [isAuthenticated, navigate]);
 
   const isInWishlist = useCallback((productId) => {
     return wishlist.some((item) => item._id === productId);
