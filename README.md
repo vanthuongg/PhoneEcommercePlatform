@@ -1,4 +1,4 @@
-# Phoneapp (E-commerce Application)
+# Phone App (E-commerce Application)
 
 A full-stack e-commerce platform featuring a modern UI and robust backend API.
 
