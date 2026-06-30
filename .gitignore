@@ -7,4 +7,3 @@ build/
 coverage/
 *.log
 .agent/
-.agent
