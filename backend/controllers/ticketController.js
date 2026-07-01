@@ -73,3 +73,30 @@ exports.closeTicket = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+exports.markTicketAsRead = async (req, res) => {
+  try {
+    const ticket = await SupportTicket.findById(req.params.id);
+    if (!ticket) return res.status(404).json({ success: false, message: 'Không tìm thấy ticket' });
+
+    let updated = false;
+    ticket.messages.forEach(msg => {
+      if (!msg.isRead) {
+        if (req.user.role === 'customer' && msg.senderRole !== 'customer') {
+          msg.isRead = true;
+          updated = true;
+        } else if (req.user.role !== 'customer' && msg.senderRole === 'customer') {
+          msg.isRead = true;
+          updated = true;
+        }
+      }
+    });
+
+    if (updated) {
+      await ticket.save();
+    }
+    res.json({ success: true, data: ticket });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

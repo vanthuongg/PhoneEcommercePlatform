@@ -5,6 +5,7 @@ const ticketMessageSchema = new mongoose.Schema({
   senderRole: { type: String, required: true },
   message: { type: String, required: true },
   attachments: [{ type: String }],
+  isRead: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
 });
 

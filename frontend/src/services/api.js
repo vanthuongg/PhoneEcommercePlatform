@@ -128,6 +128,7 @@ export const ticketAPI = {
   getAllStaff: (params) => api.get('/tickets/staff', { params }),
   create: (data) => api.post('/tickets', data),
   reply: (id, message) => api.post(`/tickets/${id}/reply`, { message }),
+  markAsRead: (id) => api.put(`/tickets/${id}/read`),
   close: (id) => api.put(`/tickets/${id}/close`),
 };
 

@@ -72,18 +72,18 @@ const ProductCard = ({ product }) => {
       {/* Badges góc trên trái */}
       <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
         {discountPercent > 0 && (
-          <span className="bg-red-500 text-white font-black text-xs px-2.5 py-1 rounded-xl shadow-md flex items-center gap-1 animate-pulse">
-            <Zap size={12} className="fill-white" /> -{discountPercent}%
+          <span className="bg-red-500 text-white font-black text-[10px] px-2 py-1 rounded-lg shadow-sm uppercase tracking-wider flex items-center gap-1">
+            <Zap size={10} className="fill-white" /> Giảm {discountPercent}%
           </span>
         )}
         {isNew && (
-          <span className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-extrabold text-[11px] px-2.5 py-1 rounded-xl shadow-md flex items-center gap-1">
-            <Sparkles size={12} /> NEW
+          <span className="bg-blue-600 text-white font-bold text-[10px] px-2 py-1 rounded-lg shadow-sm uppercase tracking-wider">
+            Mới
           </span>
         )}
         {!isNew && product.isFeatured && (
-          <span className="bg-amber-500 text-white font-extrabold text-[11px] px-2.5 py-1 rounded-xl shadow-md">
-            HOT
+          <span className="bg-amber-500 text-white font-bold text-[10px] px-2 py-1 rounded-lg shadow-sm uppercase tracking-wider">
+            Nổi bật
           </span>
         )}
       </div>
@@ -133,52 +133,52 @@ const ProductCard = ({ product }) => {
       </div>
 
       {/* Info Container */}
-      <div className="p-5 flex flex-col flex-1 justify-between gap-3">
+      <div className="p-4 sm:p-5 flex flex-col flex-1 justify-between gap-3 bg-white dark:bg-gray-800">
         <div>
-          <div className="text-xs font-bold text-primary uppercase tracking-wider truncate mb-1">
+          <div className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest truncate mb-1.5">
             {product.brand || 'Điện thoại'}
           </div>
-          <h3 className="font-bold text-base text-gray-900 dark:text-white line-clamp-2 group-hover:text-primary transition-colors leading-snug">
+          <h3 className="font-bold text-sm sm:text-base text-gray-900 dark:text-white line-clamp-2 group-hover:text-primary transition-colors leading-relaxed">
             {product.name}
           </h3>
         </div>
 
-        <div>
+        <div className="mt-auto pt-2 space-y-3.5">
           {/* Rating & Sold */}
-          <div className="flex items-center justify-between mb-3 text-xs text-gray-500 dark:text-gray-400">
+          <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
             <div className="flex items-center gap-1">
-              <RatingStars rating={product.rating || 5} size={14} />
-              <span className="font-bold text-gray-700 dark:text-gray-300">({product.rating || 5.0})</span>
+              <RatingStars rating={product.rating || 5} size={12} />
+              <span className="font-semibold text-gray-700 dark:text-gray-300">({product.rating || 5.0})</span>
             </div>
-            <span className="font-semibold bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full text-[11px]">
+            <div className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-600" />
+            <span className="text-[11px]">
               Đã bán {product.sold > 1000 ? `${(product.sold / 1000).toFixed(1)}k` : (product.sold || 12)}
             </span>
           </div>
 
-          {/* Price & Action Button */}
-          <div className="flex items-end justify-between pt-3 border-t border-gray-100 dark:border-gray-700">
-            <div className="flex flex-col">
-              <span className="font-black text-lg text-red-600 dark:text-red-400 leading-none">
-                {formatPrice(price)}
+          {/* Price */}
+          <div className="flex flex-col gap-0.5">
+            <span className="font-black text-lg sm:text-xl text-red-600 dark:text-red-400 leading-none">
+              {formatPrice(price)}
+            </span>
+            {oldPrice > price && (
+              <span className="text-xs text-gray-400 line-through">
+                {formatPrice(oldPrice)}
               </span>
-              {oldPrice > price && (
-                <span className="text-xs text-gray-400 line-through mt-1">
-                  {formatPrice(oldPrice)}
-                </span>
-              )}
-            </div>
-
-            <button
-              type="button"
-              onClick={handleAddToCart}
-              disabled={product.stock <= 0}
-              className="px-3.5 py-2.5 rounded-2xl bg-primary hover:bg-blue-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-blue-500/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed group/btn"
-              title="Thêm vào giỏ hàng"
-            >
-              <ShoppingCart size={16} className="group-hover/btn:scale-110 transition-transform" />
-              <span className="hidden sm:inline">Chọn mua</span>
-            </button>
+            )}
           </div>
+
+          {/* Action Button */}
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            disabled={product.stock <= 0}
+            className="w-full py-2.5 rounded-xl bg-primary hover:bg-blue-600 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed group/btn shadow-md shadow-blue-500/20"
+            title="Thêm vào giỏ hàng"
+          >
+            <ShoppingCart size={16} className="group-hover/btn:scale-110 transition-transform" />
+            <span>Chọn mua</span>
+          </button>
         </div>
       </div>
     </Link>

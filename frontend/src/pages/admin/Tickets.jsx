@@ -31,6 +31,20 @@ const Tickets = () => {
     }
   };
 
+  const handleSelectTicket = async (ticket) => {
+    setSelectedTicket(ticket);
+    const hasUnread = ticket.messages.some(m => m.senderRole === 'customer' && !m.isRead);
+    if (hasUnread) {
+      try {
+        const res = await ticketAPI.markAsRead(ticket._id);
+        setSelectedTicket(res.data);
+        setTickets(prev => prev.map(t => t._id === ticket._id ? res.data : t));
+      } catch (error) {
+        console.error("Failed to mark as read", error);
+      }
+    }
+  };
+
   const handleReply = async (e) => {
     e.preventDefault();
     if (!replyMessage.trim()) return;
@@ -96,11 +110,11 @@ const Tickets = () => {
               tickets.map(t => (
                 <div
                   key={t._id}
-                  onClick={() => setSelectedTicket(t)}
+                  onClick={() => handleSelectTicket(t)}
                   className={`p-3 rounded-xl cursor-pointer transition-all border ${selectedTicket?._id === t._id ? 'bg-blue-50 dark:bg-blue-900/20 border-primary' : 'bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 hover:border-blue-300'}`}
                 >
                   <div className="flex justify-between items-start mb-1">
-                    <h4 className="text-sm font-bold truncate pr-2 text-gray-900 dark:text-gray-100">{t.subject}</h4>
+                    <h4 className={`text-sm font-bold truncate pr-2 ${t.messages.some(m => m.senderRole === 'customer' && !m.isRead) ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-300'}`}>{t.subject}</h4>
                     <span className={`shrink-0 badge ${t.status === 'closed' ? 'badge-gray' : t.status === 'in_progress' ? 'badge-warning' : 'badge-success'}`}>
                       {t.status === 'closed' ? 'Đã đóng' : t.status === 'in_progress' ? 'Đang xử lý' : 'Mới'}
                     </span>
@@ -133,17 +147,31 @@ const Tickets = () => {
               </div>
 
               <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50/50 dark:bg-gray-900/20">
-                {selectedTicket.messages.map((msg, i) => (
-                  <div key={i} className={`flex ${msg.isStaff ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[70%] p-3.5 rounded-2xl text-sm ${msg.isStaff ? 'bg-primary text-white' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 shadow-sm'}`}>
-                      {!msg.isStaff && <p className="text-[10px] font-bold text-gray-400 mb-1">{selectedTicket.user?.name}</p>}
-                      <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
-                      <p className={`text-[10px] mt-2 ${msg.isStaff ? 'text-blue-200' : 'text-gray-400'}`}>
-                        {new Date(msg.createdAt).toLocaleString('vi-VN')}
-                      </p>
+                {selectedTicket.messages.map((msg, i) => {
+                  const isStaff = msg.senderRole !== 'customer';
+                  return (
+                    <div key={i} className={`flex ${isStaff ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-[70%] flex flex-col ${isStaff ? 'items-end' : 'items-start'}`}>
+                        <p className="text-[10px] font-bold text-gray-400 mb-1 mx-1">
+                          {isStaff ? 'Bạn' : selectedTicket.user?.name}
+                        </p>
+                        <div className={`p-3.5 rounded-2xl text-sm ${isStaff ? 'bg-primary text-white rounded-br-sm' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 shadow-sm rounded-bl-sm'}`}>
+                          <p className="whitespace-pre-wrap leading-relaxed">{msg.message}</p>
+                        </div>
+                        <div className="flex items-center gap-1.5 mt-1.5 px-1">
+                          <p className={`text-[10px] ${isStaff ? 'text-gray-400' : 'text-gray-400'}`}>
+                            {new Date(msg.createdAt).toLocaleString('vi-VN')}
+                          </p>
+                          {isStaff && (
+                            <span className={msg.isRead ? 'text-primary' : 'text-gray-300 dark:text-gray-600'}>
+                              {msg.isRead ? <CheckCircle className="w-3 h-3" /> : <CheckCircle className="w-3 h-3 opacity-50" />}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {selectedTicket.status !== 'closed' ? (

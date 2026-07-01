@@ -148,7 +148,7 @@ const ProductDetail = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8 transition-colors">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-24 space-y-8">
         {/* Breadcrumb */}
         <Breadcrumb
           items={[

@@ -140,7 +140,12 @@ const ChatWidget = () => {
   const inputRef = useRef(null);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesEndRef.current && messagesEndRef.current.parentElement) {
+      messagesEndRef.current.parentElement.scrollTo({
+        top: messagesEndRef.current.parentElement.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
   }, [messages, isTyping]);
 
   useEffect(() => {

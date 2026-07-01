@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { productAPI, bannerAPI } from '../../services/api';
+import { productAPI, bannerAPI, categoryAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCompare } from '../../contexts/CompareContext';
 import ProductCard from '../../components/product/ProductCard';
@@ -101,6 +101,7 @@ const FlashSaleCard = ({ product }) => {
 const Home = () => {
   const { user } = useAuth();
   const { setIsSearchOpen } = useCompare();
+  const [categories, setCategories] = useState([]);
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [flashSaleProducts, setFlashSaleProducts] = useState([]);
   const [banners, setBanners] = useState([]);
@@ -168,16 +169,17 @@ const Home = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [featRes, newRes, banRes] = await Promise.all([
+        const [featRes, newRes, banRes, catRes] = await Promise.all([
           productAPI.getAll({ isFeatured: true, limit: 8 }),
           productAPI.getAll({ limit: 12, sort: '-createdAt' }),
           bannerAPI.getAll({ isActive: true }).catch(() => ({ data: [] })),
+          categoryAPI.getAll({ isActive: true }).catch(() => ({ data: [] })),
         ]);
         const featList = featRes.data || [];
         const newList = newRes.data || [];
         setFeaturedProducts(featList);
 
-
+        if (catRes?.data?.length > 0) setCategories(catRes.data);
         if (banRes?.data?.length > 0) setBanners(banRes.data);
 
         const saleList = [...featList, ...newList].filter(
@@ -202,10 +204,11 @@ const Home = () => {
     }))
     : fallbackSlides;
 
-  useEffect(() => {
-    const t = setInterval(() => setHeroSlide((p) => (p + 1) % currentSlides.length), 6000);
-    return () => clearInterval(t);
-  }, [currentSlides.length]);
+  // Stopped auto-sliding based on user request
+  // useEffect(() => {
+  //   const t = setInterval(() => setHeroSlide((p) => (p + 1) % currentSlides.length), 6000);
+  //   return () => clearInterval(t);
+  // }, [currentSlides.length]);
 
   const slide = currentSlides[heroSlide] || fallbackSlides[0];
 
@@ -355,20 +358,49 @@ const Home = () => {
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
           <h2 className="text-xl font-black text-gray-900 dark:text-white text-center mb-6">Danh mục sản phẩm</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
-            {categoriesList.map((cat, i) => {
-              const Icon = cat.icon;
+            {(categories.length > 0 ? categories : categoriesList).map((cat, i) => {
+              const Icon = cat.icon || Smartphone;
+              const linkUrl = cat._id ? `/shop?category=${cat._id}` : `/shop?search=${cat.name}`;
               return (
-                <Link key={i} to={`/shop?search=${cat.name}`} className="flex flex-col items-center justify-center p-5 bg-white dark:bg-gray-900 border border-green-100 dark:border-green-900/30 rounded-2xl hover:shadow-lg hover:border-primary transition-all group cursor-pointer text-center">
-                  <div className={`w-14 h-14 rounded-full ${cat.bg} ${cat.color} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
-                    <Icon size={28} />
-                  </div>
-                  <h3 className="font-bold text-sm text-gray-900 dark:text-white">{cat.name}</h3>
-                  <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">{cat.sub}</p>
+                <Link key={cat._id || i} to={linkUrl} className="flex flex-col items-center justify-center p-5 bg-white dark:bg-gray-900 border border-green-100 dark:border-green-900/30 rounded-2xl hover:shadow-lg hover:border-primary transition-all group cursor-pointer text-center h-full">
+                  {cat.image ? (
+                    <div className="w-14 h-14 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform overflow-hidden bg-gray-50 dark:bg-gray-800">
+                      <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className={`w-14 h-14 rounded-full ${cat.bg || 'bg-blue-50 dark:bg-blue-900/30'} ${cat.color || 'text-blue-500'} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
+                      <Icon size={28} />
+                    </div>
+                  )}
+                  <h3 className="font-bold text-sm text-gray-900 dark:text-white line-clamp-1">{cat.name.replace(/điện thoại/i, '').trim() || cat.name}</h3>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 line-clamp-1">{cat.description || cat.sub || 'Khám phá ngay'}</p>
                 </Link>
               )
             })}
           </div>
         </section>
+
+      {/* ════════════════════════════════
+          4. MỨC GIÁ
+      ════════════════════════════════ */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { label: 'Dưới 5 Triệu', link: '/shop?maxPrice=5000000', color: 'from-green-500 to-emerald-500' },
+            { label: '5 - 10 Triệu', link: '/shop?minPrice=5000000&maxPrice=10000000', color: 'from-blue-500 to-cyan-500' },
+            { label: '10 - 20 Triệu', link: '/shop?minPrice=10000000&maxPrice=20000000', color: 'from-purple-500 to-indigo-500' },
+            { label: 'Trên 20 Triệu', link: '/shop?minPrice=20000000', color: 'from-rose-500 to-red-500' },
+          ].map((preset, idx) => (
+            <Link 
+              key={idx} 
+              to={preset.link}
+              className={`bg-gradient-to-r ${preset.color} text-white font-black text-sm p-4 rounded-2xl text-center shadow hover:shadow-lg hover:-translate-y-1 transition-all flex items-center justify-center h-full min-h-[60px]`}
+            >
+              {preset.label}
+            </Link>
+          ))}
+        </div>
+      </section>
 
       {/* ════════════════════════════════
           5. FLASH SALE  (theme-aware)

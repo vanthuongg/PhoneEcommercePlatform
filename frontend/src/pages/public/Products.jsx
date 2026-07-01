@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { productAPI, categoryAPI, brandAPI } from '../../services/api';
 import ProductCard from '../../components/product/ProductCard';
 import Breadcrumb from '../../components/ui/Breadcrumb';
-import { SlidersHorizontal, Search, X, ChevronLeft, ChevronRight, Star, Filter, Check, Smartphone, Cpu, HardDrive } from 'lucide-react';
+import { SlidersHorizontal, Search, X, ChevronLeft, ChevronRight, Star, Filter, Check, Smartphone, Cpu, HardDrive, Sparkles, Zap, ArrowRightLeft } from 'lucide-react';
 
 const Shop = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -30,8 +30,8 @@ const Shop = () => {
   });
 
   useEffect(() => {
-    categoryAPI.getAll({ isActive: true }).then((res) => setCategories(res.data || [])).catch(() => {});
-    brandAPI.getAll().then((res) => setBrands(res.data || [])).catch(() => {});
+    categoryAPI.getAll({ isActive: true }).then((res) => setCategories(res.data || [])).catch(() => { });
+    brandAPI.getAll().then((res) => setBrands(res.data || [])).catch(() => { });
   }, []);
 
   const fetchProducts = useCallback(async () => {
@@ -72,6 +72,14 @@ const Shop = () => {
 
   const updateFilter = (key, value) => {
     const newFilters = { ...filters, page: 1, [key]: value };
+    setFilters(newFilters);
+    const params = {};
+    Object.keys(newFilters).forEach((k) => { if (newFilters[k]) params[k] = newFilters[k]; });
+    setSearchParams(params);
+  };
+
+  const updateFiltersMultiple = (updates) => {
+    const newFilters = { ...filters, page: 1, ...updates };
     setFilters(newFilters);
     const params = {};
     Object.keys(newFilters).forEach((k) => { if (newFilters[k]) params[k] = newFilters[k]; });
@@ -122,11 +130,10 @@ const Shop = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setFilterOpen(!filterOpen)}
-              className={`lg:hidden flex items-center gap-2 px-4 py-2.5 rounded-2xl border text-xs font-bold transition-all ${
-                filterOpen || hasActiveFilters
+              className={`lg:hidden flex items-center gap-2 px-4 py-2.5 rounded-2xl border text-xs font-bold transition-all ${filterOpen || hasActiveFilters
                   ? 'border-primary bg-primary/10 text-primary shadow-sm'
                   : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-              }`}
+                }`}
             >
               <Filter size={16} /> Bộ lọc {hasActiveFilters && <span className="w-2 h-2 rounded-full bg-primary animate-ping" />}
             </button>
@@ -164,12 +171,12 @@ const Shop = () => {
             )}
             {filters.category && (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-300 text-xs font-bold rounded-full border border-amber-200 dark:border-amber-800">
-                Danh mục <X size={13} className="cursor-pointer hover:scale-125" onClick={() => updateFilter('category', '')} />
+                Danh mục: {(categories.find(c => c._id === filters.category)?.name || filters.category).replace(/điện thoại/i, '').trim() || (categories.find(c => c._id === filters.category)?.name || filters.category)} <X size={13} className="cursor-pointer hover:scale-125" onClick={() => updateFilter('category', '')} />
               </span>
             )}
             {(filters.minPrice || filters.maxPrice) && (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-300 text-xs font-bold rounded-full border border-emerald-200 dark:border-emerald-800">
-                Giá: {filters.minPrice ? `${(Number(filters.minPrice)/1000000).toFixed(0)}tr` : '0'} - {filters.maxPrice ? `${(Number(filters.maxPrice)/1000000).toFixed(0)}tr` : 'MAX'} <X size={13} className="cursor-pointer hover:scale-125" onClick={() => { updateFilter('minPrice', ''); updateFilter('maxPrice', ''); }} />
+                Giá: {filters.minPrice ? `${(Number(filters.minPrice) / 1000000).toFixed(0)}tr` : '0'} - {filters.maxPrice ? `${(Number(filters.maxPrice) / 1000000).toFixed(0)}tr` : 'MAX'} <X size={13} className="cursor-pointer hover:scale-125" onClick={() => updateFiltersMultiple({ minPrice: '', maxPrice: '' })} />
               </span>
             )}
             {filters.ram && (
@@ -196,12 +203,12 @@ const Shop = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-4 xl:grid-cols-5 gap-6 xl:gap-8 items-start">
           {/* Sidebar Filter Panel */}
-          <aside className={`${filterOpen ? 'block' : 'hidden'} lg:block lg:col-span-1 space-y-6 bg-white dark:bg-gray-900 rounded-3xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm sticky top-24 max-h-[85vh] overflow-y-auto no-scrollbar`}>
+          <aside className={`${filterOpen ? 'block' : 'hidden'} lg:block lg:col-span-1 space-y-6 bg-white dark:bg-gray-900 rounded-3xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm`}>
             <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800">
-              <h3 className="font-black text-base text-gray-900 dark:text-white flex items-center gap-2">
-                <SlidersHorizontal size={18} className="text-primary" /> Bộ Lọc Sản Phẩm
+              <h3 className="font-black text-lg text-gray-900 dark:text-white flex items-center gap-2">
+                <SlidersHorizontal size={20} className="text-primary" /> BỘ LỌC
               </h3>
               {hasActiveFilters && (
                 <button onClick={clearFilters} className="text-xs font-bold text-red-500 hover:underline">
@@ -225,14 +232,39 @@ const Shop = () => {
               </div>
             </div>
 
-            {/* Brands Filter */}
+            {/* Categories Filter */}
             <div className="space-y-2.5">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5"><Smartphone size={14} className="text-primary"/> Thương Hiệu</label>
-              <div className="flex flex-wrap gap-2">
+              <label className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest flex items-center gap-2"><Smartphone size={16} className="text-blue-500"/> DANH MỤC</label>
+              <div className="grid grid-cols-2 gap-1.5">
+                <button
+                  onClick={() => updateFilter('category', '')}
+                  className={`w-full text-center px-2 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
+                    !filters.category ? 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800' : 'bg-transparent text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
+                  }`}
+                >
+                  Tất cả
+                </button>
+                {categories.map((c) => (
+                  <button
+                    key={c._id}
+                    onClick={() => updateFilter('category', filters.category === c._id ? '' : c._id)}
+                    className={`w-full text-center px-2 py-1.5 rounded-lg text-xs font-semibold transition-all border truncate ${
+                      filters.category === c._id ? 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800' : 'bg-transparent text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    }`}
+                    title={c.name.replace(/điện thoại/i, '').trim() || c.name}
+                  >
+                    {c.name.replace(/điện thoại/i, '').trim() || c.name}
+                  </button>
+                ))}
+              </div>
+            </div>              {/* Brands Filter */}
+            <div className="space-y-2.5">
+              <label className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest flex items-center gap-2"><Sparkles size={16} className="text-purple-500"/> THƯƠNG HIỆU</label>
+              <div className="grid grid-cols-2 gap-1.5">
                 <button
                   onClick={() => updateFilter('brand', '')}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                    !filters.brand ? 'bg-primary text-white shadow-sm' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200'
+                  className={`w-full text-center px-2 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
+                    !filters.brand ? 'bg-purple-50 text-purple-600 border-purple-200 dark:bg-purple-900/20 dark:border-purple-800' : 'bg-transparent text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
                 >
                   Tất cả
@@ -241,9 +273,10 @@ const Shop = () => {
                   <button
                     key={b}
                     onClick={() => updateFilter('brand', filters.brand === b ? '' : b)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                      filters.brand === b ? 'bg-primary text-white shadow-sm' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200'
+                    className={`w-full text-center px-2 py-1.5 rounded-lg text-xs font-semibold transition-all border truncate ${
+                      filters.brand === b ? 'bg-purple-50 text-purple-600 border-purple-200 dark:bg-purple-900/20 dark:border-purple-800' : 'bg-transparent text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
                     }`}
+                    title={b}
                   >
                     {b}
                   </button>
@@ -252,20 +285,21 @@ const Shop = () => {
             </div>
 
             {/* Price Presets & Inputs */}
-            <div className="space-y-3">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Mức giá</label>
-              <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-2.5">
+              <label className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest flex items-center gap-2"><Zap size={16} className="text-amber-500"/> MỨC GIÁ</label>
+              <div className="grid grid-cols-2 gap-1.5">
                 {pricePresets.map((preset, idx) => {
                   const isActive = filters.minPrice === preset.min && filters.maxPrice === preset.max;
                   return (
                     <button
                       key={idx}
-                      onClick={() => { updateFilter('minPrice', preset.min); updateFilter('maxPrice', preset.max); }}
-                      className={`p-2.5 rounded-xl text-[11px] font-bold border text-center transition-all ${
+                      onClick={() => updateFiltersMultiple({ minPrice: preset.min, maxPrice: preset.max })}
+                      className={`w-full text-center px-2 py-1.5 rounded-lg text-xs font-semibold transition-all border truncate ${
                         isActive
-                          ? 'border-primary bg-primary/10 text-primary font-black shadow-sm'
-                          : 'border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-gray-300'
+                          ? 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800'
+                          : 'bg-transparent text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
                       }`}
+                      title={preset.label}
                     >
                       {preset.label}
                     </button>
@@ -276,14 +310,14 @@ const Shop = () => {
 
             {/* RAM Filter */}
             <div className="space-y-2.5">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5"><Cpu size={14} className="text-blue-500"/> Dung lượng RAM</label>
-              <div className="flex flex-wrap gap-2">
+              <label className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest flex items-center gap-2"><Cpu size={16} className="text-blue-500" /> RAM</label>
+              <div className="grid grid-cols-3 gap-1.5">
                 {ramOptions.map((r) => (
                   <button
                     key={r}
                     onClick={() => updateFilter('ram', filters.ram === r ? '' : r)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                      filters.ram === r ? 'bg-blue-600 text-white shadow-sm' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200'
+                    className={`w-full text-center px-1 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
+                      filters.ram === r ? 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800' : 'bg-transparent text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
                     }`}
                   >
                     {r}
@@ -294,14 +328,14 @@ const Shop = () => {
 
             {/* Storage Filter */}
             <div className="space-y-2.5">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5"><HardDrive size={14} className="text-purple-500"/> Bộ nhớ trong (ROM)</label>
-              <div className="flex flex-wrap gap-2">
+              <label className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest flex items-center gap-2"><HardDrive size={16} className="text-purple-500" /> BỘ NHỚ</label>
+              <div className="grid grid-cols-3 gap-1.5">
                 {storageOptions.map((s) => (
                   <button
                     key={s}
                     onClick={() => updateFilter('storage', filters.storage === s ? '' : s)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                      filters.storage === s ? 'bg-purple-600 text-white shadow-sm' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200'
+                    className={`w-full text-center px-1 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
+                      filters.storage === s ? 'bg-purple-50 text-purple-600 border-purple-200 dark:bg-purple-900/20 dark:border-purple-800' : 'bg-transparent text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
                     }`}
                   >
                     {s}
@@ -312,14 +346,14 @@ const Shop = () => {
 
             {/* Color Filter */}
             <div className="space-y-2.5">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">🎨 Màu sắc</label>
-              <div className="flex flex-wrap gap-2">
+              <label className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest flex items-center gap-2">🎨 MÀU SẮC</label>
+              <div className="grid grid-cols-2 gap-1.5">
                 {colorOptions.map((c) => (
                   <button
                     key={c}
                     onClick={() => updateFilter('color', filters.color === c ? '' : c)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                      filters.color === c ? 'bg-pink-600 text-white shadow-sm' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200'
+                    className={`w-full text-center px-2 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
+                      filters.color === c ? 'bg-gray-900 text-white border-gray-900 dark:bg-white dark:text-gray-900 dark:border-white shadow-sm' : 'bg-transparent text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
                     }`}
                   >
                     {c}
@@ -330,18 +364,17 @@ const Shop = () => {
 
             {/* Rating Filter */}
             <div className="space-y-2.5">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Đánh giá khách hàng</label>
-              <div className="space-y-1.5">
+              <label className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest flex items-center gap-2"><Star size={16} className="text-yellow-500"/> ĐÁNH GIÁ</label>
+              <div className="grid grid-cols-2 gap-1.5">
                 {[4, 3].map((star) => (
                   <button
                     key={star}
                     onClick={() => updateFilter('rating', filters.rating === String(star) ? '' : String(star))}
-                    className={`w-full p-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-between ${
-                      filters.rating === String(star) ? 'bg-amber-500 text-white shadow-sm' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200'
+                    className={`w-full text-center px-1 py-1.5 rounded-lg text-xs font-semibold transition-all border flex justify-center items-center gap-1 ${
+                      filters.rating === String(star) ? 'bg-yellow-50 text-yellow-600 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800' : 'bg-transparent text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
                     }`}
                   >
-                    <span className="flex items-center gap-1">Từ {star} <Star size={14} className="fill-current text-amber-300" /> trở lên</span>
-                    {filters.rating === String(star) && <Check size={14} />}
+                    Từ {star} <Star size={12} className="fill-current text-yellow-500" />
                   </button>
                 ))}
               </div>
@@ -356,16 +389,16 @@ const Shop = () => {
                   onChange={(e) => updateFilter('inStock', e.target.checked ? 'true' : '')}
                   className="w-4 h-4 rounded text-primary focus:ring-primary border-gray-300"
                 />
-                <span className="text-xs font-bold text-gray-700 dark:text-gray-300">Chỉ hiện máy sẵn kho</span>
+                <span className="text-sm font-bold text-gray-700 dark:text-gray-300">Chỉ hiện máy sẵn kho</span>
               </label>
             </div>
           </aside>
 
           {/* Products Grid */}
-          <div className="lg:col-span-3 space-y-6">
+          <div className="lg:col-span-3 xl:col-span-4 space-y-6">
             {loading ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-                {[...Array(9)].map((_, i) => (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6">
+                {[...Array(12)].map((_, i) => (
                   <div key={i} className="bg-white dark:bg-gray-900 rounded-3xl p-5 border dark:border-gray-800 animate-pulse space-y-4">
                     <div className="aspect-square bg-gray-200 dark:bg-gray-800 rounded-2xl" />
                     <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-3/4" />
@@ -384,7 +417,7 @@ const Shop = () => {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                   {products.map((p) => (
                     <ProductCard key={p._id || p.id} product={p} />
                   ))}
@@ -404,11 +437,10 @@ const Shop = () => {
                       <button
                         key={i + 1}
                         onClick={() => updateFilter('page', i + 1)}
-                        className={`w-11 h-11 rounded-2xl text-xs font-extrabold transition-all ${
-                          filters.page === i + 1
+                        className={`w-11 h-11 rounded-2xl text-xs font-extrabold transition-all ${filters.page === i + 1
                             ? 'bg-primary text-white shadow-md shadow-blue-500/20 scale-105'
                             : 'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 text-gray-700 dark:text-gray-300'
-                        }`}
+                          }`}
                       >
                         {i + 1}
                       </button>
@@ -427,6 +459,46 @@ const Shop = () => {
           </div>
         </div>
       </div>
+
+      {/* ════════════════════════════════
+          PROMO & ARTICLES AT BOTTOM (Full Width)
+      ════════════════════════════════ */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 mb-8">
+        <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900/50 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-center gap-4 text-center sm:text-left mb-8 shadow-sm hover:shadow-md transition-shadow">
+          <p className="text-green-800 dark:text-green-400 font-semibold text-base">Bạn chưa biết chọn máy nào? — Dùng công cụ so sánh của chúng tôi</p>
+          <Link 
+            to="/compare" 
+            className="bg-green-700 hover:bg-green-800 text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-md transition-all flex items-center gap-2 active:scale-95"
+          >
+            So sánh điện thoại <ArrowRightLeft size={16} />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <Link to="/blog/review-iphone-17" className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-6 text-center hover:shadow-lg hover:border-primary/30 transition-all group">
+            <h3 className="font-bold text-gray-900 dark:text-white mb-2 group-hover:text-primary transition-colors text-base">Review iPhone 17 Pro Max</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Camera đỉnh, pin 30 giờ?</p>
+            <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-amber-500">
+              <Star size={14} className="fill-amber-500" /> 4.9 <span className="text-gray-400 dark:text-gray-500 font-normal ml-1">- 2.400 lượt xem</span>
+            </div>
+          </Link>
+          <Link to="/blog/top-5-tam-trung" className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-6 text-center hover:shadow-lg hover:border-primary/30 transition-all group">
+            <h3 className="font-bold text-gray-900 dark:text-white mb-2 group-hover:text-primary transition-colors text-base">Top 5 máy tầm trung 2026</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Hiệu năng — Pin — Thiết kế</p>
+            <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-amber-500">
+              <Star size={14} className="fill-amber-500" /> 4.8 <span className="text-gray-400 dark:text-gray-500 font-normal ml-1">- 1.800 lượt xem</span>
+            </div>
+          </Link>
+          <Link to="/blog/samsung-vs-iphone" className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-6 text-center hover:shadow-lg hover:border-primary/30 transition-all group">
+            <h3 className="font-bold text-gray-900 dark:text-white mb-2 group-hover:text-primary transition-colors text-base">Nên mua Samsung hay iPhone?</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">So sánh chi tiết năm 2026</p>
+            <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-amber-500">
+              <Star size={14} className="fill-amber-500" /> 4.7 <span className="text-gray-400 dark:text-gray-500 font-normal ml-1">- 3.100 lượt xem</span>
+            </div>
+          </Link>
+        </div>
+      </div>
+
     </div>
   );
 };
