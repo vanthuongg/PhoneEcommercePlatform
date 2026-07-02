@@ -49,62 +49,62 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-3.5 sm:p-4 space-y-3.5 animate-fade-in">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Dashboard</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Tổng quan cửa hàng</p>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">Dashboard Quản Lý</h1>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Tổng quan hoạt động cửa hàng</p>
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3.5">
         {kpis.map((kpi) => {
           const Icon = kpi.icon;
           return (
-            <div key={kpi.label} className="card p-5">
-              <div className={`w-10 h-10 ${kpi.bg} rounded-xl flex items-center justify-center mb-3`}>
-                <Icon className={`w-5 h-5 ${kpi.color}`} />
+            <div key={kpi.label} className="card p-4">
+              <div className={`w-9 h-9 ${kpi.bg} rounded-xl flex items-center justify-center mb-2`}>
+                <Icon className={`w-4 h-4 ${kpi.color}`} />
               </div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{kpi.value}</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{kpi.label}</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{kpi.value}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{kpi.label}</p>
             </div>
           );
         })}
       </div>
 
       {/* Revenue chart */}
-      <div className="card p-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Doanh thu theo tháng</h2>
+      <div className="card p-4 sm:p-5">
+        <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">Doanh thu theo tháng</h2>
         {revenueData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={240}>
+          <ResponsiveContainer width="100%" height={200}>
             <BarChart data={revenueData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => formatPrice(v)} />
+              <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+              <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => formatPrice(v)} />
               <Tooltip formatter={(v) => formatPrice(v)} />
               <Bar dataKey="revenue" fill="#2563eb" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <div className="h-60 flex items-center justify-center text-gray-400">Chưa có dữ liệu</div>
+          <div className="h-44 flex items-center justify-center text-gray-400 text-xs">Chưa có dữ liệu</div>
         )}
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-3.5">
         {/* Recent orders */}
-        <div className="card p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Đơn hàng gần đây</h2>
-          <div className="space-y-3">
+        <div className="card p-4 sm:p-5">
+          <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">Đơn hàng gần đây</h2>
+          <div className="space-y-2">
             {recentOrders.map((order) => (
-              <div key={order._id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-xl">
+              <div key={order._id} className="flex items-center justify-between p-2.5 bg-gray-50 dark:bg-gray-900 rounded-xl text-xs">
                 <div>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">#{order.orderCode}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{order.user?.name}</p>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">#{order.orderCode}</p>
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400">{order.user?.name}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className={`badge ${statusConfig[order.orderStatus]?.badge}`}>
                     {statusConfig[order.orderStatus]?.label}
                   </span>
-                  <span className="text-sm font-bold text-primary-600">{formatPrice(order.totalAmount)}</span>
+                  <span className="font-bold text-primary-600">{formatPrice(order.totalAmount)}</span>
                 </div>
               </div>
             ))}
@@ -112,19 +112,19 @@ const Dashboard = () => {
         </div>
 
         {/* Top products */}
-        <div className="card p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Sản phẩm bán chạy</h2>
-          <div className="space-y-3">
+        <div className="card p-4 sm:p-5">
+          <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">Sản phẩm bán chạy</h2>
+          <div className="space-y-2">
             {(stats?.topProducts || []).map((product, idx) => (
-              <div key={product._id} className="flex items-center gap-3">
-                <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+              <div key={product._id} className="flex items-center gap-2.5 text-xs">
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
                   idx === 0 ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400' : idx === 1 ? 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' : 'bg-orange-50 text-orange-500 dark:bg-orange-900/30 dark:text-orange-400'
                 }`}>{idx + 1}</span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{product.name}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{product.category?.name}</p>
+                  <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{product.name}</p>
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400">{product.category?.name}</p>
                 </div>
-                <span className="text-sm font-bold text-gray-700 dark:text-gray-300">{product.sold} sold</span>
+                <span className="font-bold text-gray-700 dark:text-gray-300">{product.sold} sold</span>
               </div>
             ))}
           </div>

@@ -23,6 +23,7 @@ const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
+  const [addedSuccess, setAddedSuccess] = useState(false);
 
   // Thao tác chọn phân loại (màu / dung lượng)
   const [selectedColor, setSelectedColor] = useState('Titan tự nhiên');
@@ -39,6 +40,7 @@ const ProductDetail = () => {
   const defaultStorages = ['128GB', '256GB', '512GB', '1TB'];
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -50,7 +52,6 @@ const ProductDetail = () => {
 
         // Set initial variants if present
         if (prodData?.colors?.length > 0) {
-          // colors can be array of objects {name, images} or array of strings
           const firstColor = prodData.colors[0];
           setSelectedColor(typeof firstColor === 'object' ? firstColor.name : firstColor);
         } else {
@@ -59,7 +60,6 @@ const ProductDetail = () => {
 
         if (prodData?.sizes?.length > 0) setSelectedStorage(prodData.sizes[0]);
         else if (prodData?.variants?.length > 0) {
-          // variants have ram/storage fields, use storage
           const firstVariant = prodData.variants[0];
           setSelectedStorage(firstVariant.storage || firstVariant.name || '256GB');
         }
@@ -73,11 +73,24 @@ const ProductDetail = () => {
     fetchData();
   }, [id]);
 
-  const handleAddToCart = async (isBuyNow = false) => {
+  const handleAddToCart = async (arg1, arg2) => {
+    let e = null;
+    let isBuyNow = false;
+    if (typeof arg1 === 'boolean') {
+      isBuyNow = arg1;
+    } else if (arg1 && typeof arg1 === 'object') {
+      e = arg1;
+      isBuyNow = Boolean(arg2);
+    }
+    if (e && e.preventDefault) {
+      e.preventDefault();
+    }
+
     const matchingVariant = product?.variants?.find(
       v => (v.storage === selectedStorage || v.name === selectedStorage) && v.color === selectedColor
     );
     const currentStock = matchingVariant ? matchingVariant.stock : (product.stock || 0);
+    const currentPrice = matchingVariant ? matchingVariant.price : (product.salePrice > 0 ? product.salePrice : product.price);
 
     if (currentStock <= 0) {
       toast.error('Phiên bản này tạm hết hàng');
@@ -88,9 +101,24 @@ const ProductDetail = () => {
       return;
     }
 
-    await addToCart(product._id || product.id, quantity, selectedStorage, selectedColor);
+    const startX = e?.clientX || window.innerWidth / 2;
+    const startY = e?.clientY || window.innerHeight / 2;
+
+    await addToCart(product._id || product.id, quantity, selectedStorage, selectedColor, {
+      name: product.name,
+      image: product.images?.[0],
+      price: currentPrice,
+      startX,
+      startY,
+      skipEffect: isBuyNow,
+      skipToast: isBuyNow
+    });
+
     if (isBuyNow) {
       navigate('/cart');
+    } else {
+      setAddedSuccess(true);
+      setTimeout(() => setAddedSuccess(false), 1800);
     }
   };
 
@@ -105,18 +133,18 @@ const ProductDetail = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
-        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <div className="w-12 h-12 border-4 border-primary-600 border-t-transparent rounded-full animate-spin shadow-glow" />
       </div>
     );
   }
 
   if (!product) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
-        <div className="text-center p-8 bg-white dark:bg-gray-900 rounded-3xl shadow-xl max-w-md">
-          <p className="text-xl font-bold text-gray-900 dark:text-white mb-4">Sản phẩm không tồn tại hoặc đã ngừng kinh doanh</p>
-          <Link to="/shop" className="px-6 py-3 bg-primary text-white rounded-2xl font-bold inline-flex items-center gap-2">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <div className="text-center p-8 bg-white dark:bg-slate-900 rounded-3xl shadow-premium max-w-md border border-slate-200 dark:border-slate-800">
+          <p className="text-xl font-extrabold text-slate-900 dark:text-white mb-4">Sản phẩm không tồn tại hoặc đã ngừng kinh doanh</p>
+          <Link to="/shop" className="btn-primary inline-flex items-center gap-2">
             <ArrowLeft size={18} /> Quay lại cửa hàng
           </Link>
         </div>
@@ -138,17 +166,17 @@ const ProductDetail = () => {
 
   // Fallback specs for phones if not explicitly in product object
   const specs = product.specs || {
-    screen: '6.7 inch Super Retina XDR OLED, 120Hz',
-    cpu: product.brand === 'Apple' ? 'Apple A17 Pro 6 nhân' : 'Snapdragon 8 Gen 3 8 nhân',
-    ram: product.brand === 'Apple' ? '8 GB' : '12 GB',
+    screen: '6.7 inch Super Retina XDR OLED, 120Hz ProMotion',
+    cpu: product.brand === 'Apple' ? 'Apple A18 Pro 6 nhân thế hệ mới' : 'Snapdragon 8 Gen 4 8 nhân tiến trình 3nm',
+    ram: product.brand === 'Apple' ? '8 GB' : '12 GB LPDDR5X',
     rom: selectedStorage,
-    camera: 'Chính 48 MP & Phụ 12 MP, 12 MP (Zoom 5x)',
-    battery: '4422 mAh, Sạc nhanh 30W'
+    camera: 'Chính 48 MP & Ultra Wide 48 MP, Telephoto 12 MP (5x Optical Zoom)',
+    battery: '4685 mAh, Sạc nhanh MagSafe & SuperFast 45W'
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8 transition-colors">
-      <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-24 space-y-8">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-8 transition-colors">
+      <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         {/* Breadcrumb */}
         <Breadcrumb
           items={[
@@ -160,7 +188,7 @@ const ProductDetail = () => {
         />
 
         {/* Main Product Card */}
-        <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 sm:p-8 border border-gray-100 dark:border-gray-800 shadow-sm grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-10 border border-slate-200/80 dark:border-slate-800/80 shadow-premium dark:shadow-premium-dark grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
           {/* Gallery (Left 5 cols) */}
           <div className="lg:col-span-5">
             <ProductGallery images={product.images || [product.image].filter(Boolean)} />
@@ -168,18 +196,18 @@ const ProductDetail = () => {
 
           {/* Product Info (Right 7 cols) */}
           <div className="lg:col-span-7 flex flex-col justify-between space-y-6">
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-black uppercase tracking-wider text-primary bg-primary/10 px-3.5 py-1.5 rounded-full">
+                <span className="text-xs font-black uppercase tracking-wider text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 px-3.5 py-1 rounded-full border border-primary-500/20">
                   {product.brand || 'Điện thoại chính hãng'}
                 </span>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={handleToggleCompare}
-                    className={`p-2 rounded-xl transition-colors flex items-center gap-1.5 text-xs font-bold ${
+                    className={`p-2.5 rounded-2xl transition-all flex items-center gap-1.5 text-xs font-extrabold border ${
                       isInCompare(product._id || product.id)
-                        ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/40'
-                        : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/40'
+                        ? 'bg-primary-600 text-white border-primary-600 shadow-md shadow-primary-500/25'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-primary-500'
                     }`}
                     title={isInCompare(product._id || product.id) ? "Bỏ so sánh" : "Thêm vào so sánh"}
                   >
@@ -190,43 +218,45 @@ const ProductDetail = () => {
                   </button>
                   <button
                     onClick={() => toggleWishlist(product)}
-                    className={`p-2 rounded-xl transition-colors flex items-center gap-1.5 text-xs font-bold ${
-                      isWishlisted ? 'bg-red-50 text-red-500 dark:bg-red-900/40' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:text-red-500'
+                    className={`p-2.5 rounded-2xl transition-all flex items-center gap-1.5 text-xs font-extrabold border ${
+                      isWishlisted
+                        ? 'bg-red-500 text-white border-red-500 shadow-md shadow-red-500/25'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-red-500 hover:text-red-500'
                     }`}
                   >
-                    <Heart size={16} className={isWishlisted ? 'fill-red-500' : ''} />
+                    <Heart size={16} className={isWishlisted ? 'fill-white' : ''} />
                   </button>
                 </div>
               </div>
 
-              <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white leading-tight">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 dark:text-white leading-tight font-display tracking-tight">
                 {product.name}
               </h1>
 
               {/* Ratings */}
-              <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 pb-3 border-b border-gray-100 dark:border-gray-800">
-                <div className="flex items-center gap-1.5 font-bold text-amber-500">
+              <div className="flex flex-wrap items-center gap-3.5 text-xs text-slate-500 dark:text-slate-400 pb-4 border-b border-slate-100 dark:border-slate-800/80">
+                <div className="flex items-center gap-1.5 font-extrabold text-amber-500">
                   <RatingStars rating={product.rating || 5} size={16} />
-                  <span className="text-gray-900 dark:text-white text-sm">({product.rating || 5.0})</span>
+                  <span className="text-slate-900 dark:text-white text-sm">({product.rating || 5.0})</span>
                 </div>
-                <span>|</span>
-                <span><strong className="text-gray-900 dark:text-white">{product.numReviews || product.reviewCount || 0}</strong> Đánh giá</span>
-                <span>|</span>
-                <span>Đã bán <strong className="text-gray-900 dark:text-white">{product.sold || 48}</strong></span>
+                <span>•</span>
+                <span><strong className="text-slate-900 dark:text-white font-extrabold">{product.numReviews || product.reviewCount || 0}</strong> Đánh giá</span>
+                <span>•</span>
+                <span className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-2.5 py-0.5 rounded-md font-bold">Đã bán <strong className="font-extrabold">{product.sold || 48}</strong></span>
               </div>
 
               {/* Price Banner */}
-              <div className="bg-primary/5 dark:bg-gray-800 rounded-2xl p-5 flex flex-wrap items-baseline gap-3 border border-primary/20">
-                <span className="text-3xl sm:text-4xl font-black text-red-600 dark:text-red-400">
+              <div className="bg-gradient-to-r from-primary-50/60 via-slate-50 to-white dark:from-slate-800/80 dark:via-slate-800/40 dark:to-slate-900 rounded-3xl p-6 flex flex-wrap items-baseline gap-4 border border-primary-500/20 shadow-inner">
+                <span className="text-3xl sm:text-4xl font-black text-red-600 dark:text-red-400 font-display tracking-tight leading-none">
                   {formatPrice(displayPrice)}
                 </span>
                 {hasDiscount && (
                   <>
-                    <span className="text-base text-gray-400 line-through">
+                    <span className="text-base text-slate-400 line-through font-semibold">
                       {formatPrice(currentPrice)}
                     </span>
-                    <span className="bg-red-500 text-white font-black text-xs px-2.5 py-1 rounded-lg shadow uppercase flex items-center gap-1 animate-pulse">
-                      <Zap size={12} className="fill-white" /> Giảm {discountPercent}%
+                    <span className="bg-gradient-to-r from-red-600 to-accent-600 text-white font-black text-xs px-3 py-1 rounded-xl shadow uppercase flex items-center gap-1">
+                      <Zap size={13} className="fill-white animate-pulse" /> Giảm {discountPercent}%
                     </span>
                   </>
                 )}
@@ -234,11 +264,11 @@ const ProductDetail = () => {
             </div>
 
             {/* Options Selection */}
-            <div className="space-y-5 pt-2">
+            <div className="space-y-5 pt-1">
               {/* Chọn Dung Lượng / ROM */}
               <div>
-                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2.5">
-                  Dung lượng lưu trữ: <span className="text-primary font-black">{selectedStorage}</span>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2.5">
+                  Dung lượng lưu trữ: <span className="text-primary-600 dark:text-primary-400 font-black">{selectedStorage}</span>
                 </label>
                 <div className="flex flex-wrap gap-3">
                   {[...new Set(product.sizes?.length ? product.sizes :
@@ -249,10 +279,10 @@ const ProductDetail = () => {
                       key={`${storage}-${idx}`}
                       type="button"
                       onClick={() => setSelectedStorage(storage)}
-                      className={`px-4 py-2.5 rounded-2xl text-xs font-bold border-2 transition-all ${
+                      className={`px-5 py-3 rounded-2xl text-xs font-extrabold border-2 transition-all duration-200 ${
                         selectedStorage === storage
-                          ? 'border-primary bg-primary/10 text-primary shadow-sm scale-105'
-                          : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-gray-300'
+                          ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-300 shadow-md shadow-primary-500/15 scale-105'
+                          : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700'
                       }`}
                     >
                       {storage}
@@ -263,8 +293,8 @@ const ProductDetail = () => {
 
               {/* Chọn Màu Sắc */}
               <div>
-                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2.5">
-                  Màu sắc phiên bản: <span className="text-primary font-black">{selectedColor}</span>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2.5">
+                  Màu sắc phiên bản: <span className="text-primary-600 dark:text-primary-400 font-black">{selectedColor}</span>
                 </label>
                 <div className="flex flex-wrap gap-3">
                   {[...new Set(product.colors?.length
@@ -275,13 +305,13 @@ const ProductDetail = () => {
                       key={`${colorName}-${idx}`}
                       type="button"
                       onClick={() => setSelectedColor(colorName)}
-                      className={`px-4 py-2.5 rounded-2xl text-xs font-bold border-2 transition-all flex items-center gap-2 ${
+                      className={`px-4 py-2.5 rounded-2xl text-xs font-extrabold border-2 transition-all duration-200 flex items-center gap-2.5 ${
                         selectedColor === colorName
-                          ? 'border-primary bg-primary/10 text-primary shadow-sm scale-105'
-                          : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-gray-300'
+                          ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-300 shadow-md shadow-primary-500/15 scale-105'
+                          : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700'
                       }`}
                     >
-                      <span className="w-3.5 h-3.5 rounded-full border border-black/10 shadow-inner" style={{ backgroundColor: colorName.includes('Đen') ? '#1e293b' : colorName.includes('Trắng') ? '#f8fafc' : colorName.includes('Xanh') ? '#0284c7' : colorName.includes('Tím') ? '#7c3aed' : colorName.includes('Titan') ? '#94a3b8' : colorName.includes('Vàng') ? '#f59e0b' : '#94a3b8' }} />
+                      <span className="w-4 h-4 rounded-full border border-black/10 shadow-inner" style={{ backgroundColor: colorName.includes('Đen') ? '#1e293b' : colorName.includes('Trắng') ? '#f8fafc' : colorName.includes('Xanh') ? '#0284c7' : colorName.includes('Tím') ? '#7c3aed' : colorName.includes('Titan') ? '#94a3b8' : colorName.includes('Vàng') ? '#f59e0b' : '#94a3b8' }} />
                       {colorName}
                     </button>
                   ))}
@@ -292,47 +322,59 @@ const ProductDetail = () => {
             {/* Quantity & Stock */}
             <div className="space-y-4 pt-3">
               <div className="flex items-center gap-4">
-                <span className="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Số lượng mua:</span>
-                <div className="flex items-center border border-gray-200 dark:border-gray-700 rounded-2xl bg-gray-50 dark:bg-gray-800 overflow-hidden shadow-sm">
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Số lượng mua:</span>
+                <div className="flex items-center border border-slate-200 dark:border-slate-800 rounded-2xl bg-slate-50 dark:bg-slate-800/80 overflow-hidden shadow-inner">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="w-10 h-10 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-gray-600 dark:text-gray-300"
+                    className="w-10 h-10 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-slate-600 dark:text-slate-300"
                   >
                     <Minus size={16} />
                   </button>
-                  <span className="w-12 text-center font-extrabold text-sm text-gray-900 dark:text-white">{quantity}</span>
+                  <span className="w-12 text-center font-extrabold text-sm text-slate-900 dark:text-white">{quantity}</span>
                   <button
                     onClick={() => setQuantity(Math.min(currentStock || 99, quantity + 1))}
-                    className="w-10 h-10 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-gray-600 dark:text-gray-300"
+                    className="w-10 h-10 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-slate-600 dark:text-slate-300"
                   >
                     <Plus size={16} />
                   </button>
                 </div>
                 {currentStock > 0 ? (
-                  <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
-                    <CheckCircle size={14} /> Có sẵn {currentStock} máy
+                  <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1 rounded-xl">
+                    <CheckCircle size={15} /> Có sẵn {currentStock} máy
                   </span>
                 ) : (
-                  <span className="text-xs font-bold text-red-500">Tạm hết hàng</span>
+                  <span className="text-xs font-extrabold text-red-500 bg-red-50 dark:bg-red-900/30 px-3 py-1 rounded-xl">Tạm hết hàng</span>
                 )}
               </div>
 
               {/* Action Buttons */}
               {isCustomer && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
                   <button
                     type="button"
-                    onClick={() => handleAddToCart(false)}
+                    onClick={(e) => handleAddToCart(e, false)}
                     disabled={currentStock <= 0}
-                    className="w-full py-4 px-6 rounded-2xl font-black text-sm border-2 border-primary bg-primary/10 text-primary hover:bg-primary/20 transition-all flex items-center justify-center gap-2 shadow-sm active:scale-95 disabled:opacity-50"
+                    className={`w-full py-4 px-6 rounded-2xl font-extrabold text-sm border-2 transition-all flex items-center justify-center gap-2.5 shadow-sm active:scale-95 disabled:opacity-50 ${
+                      addedSuccess
+                        ? 'bg-emerald-500 border-emerald-500 text-white shadow-emerald-500/40 animate-pulse-glow'
+                        : 'border-primary-600 bg-primary-50/50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-300 hover:bg-primary-600 hover:text-white'
+                    }`}
                   >
-                    <ShoppingCart size={18} /> Thêm Vào Giỏ Hàng
+                    {addedSuccess ? (
+                      <>
+                        <CheckCircle size={18} className="animate-bounce" /> Đã Vào Giỏ! ✨
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingCart size={18} /> Thêm Vào Giỏ Hàng
+                      </>
+                    )}
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleAddToCart(true)}
+                    onClick={(e) => handleAddToCart(e, true)}
                     disabled={currentStock <= 0}
-                    className="w-full py-4 px-6 rounded-2xl font-black text-sm bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-indigo-600 text-white shadow-lg shadow-blue-500/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="w-full py-4 px-6 rounded-2xl font-extrabold text-sm bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-700 hover:to-indigo-700 text-white shadow-lg shadow-primary-500/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2.5 disabled:opacity-50"
                   >
                     <Zap size={18} className="fill-white" /> Mua Ngay
                   </button>
@@ -341,21 +383,21 @@ const ProductDetail = () => {
             </div>
 
             {/* Features Guarantee */}
-            <div className="grid grid-cols-3 gap-3 pt-5 border-t border-gray-100 dark:border-gray-800 text-center">
-              <div className="flex flex-col items-center p-3 rounded-2xl bg-gray-50 dark:bg-gray-800/60">
-                <Shield className="w-5 h-5 text-primary mb-1" />
-                <span className="text-xs font-extrabold text-gray-800 dark:text-gray-200">100% Chính hãng</span>
-                <span className="text-[10px] text-gray-400">Bảo hành 24 tháng</span>
+            <div className="grid grid-cols-3 gap-3 pt-5 border-t border-slate-100 dark:border-slate-800/80 text-center">
+              <div className="flex flex-col items-center p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800/50">
+                <Shield className="w-5 h-5 text-primary-600 dark:text-primary-400 mb-1" />
+                <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200">100% Chính hãng</span>
+                <span className="text-[10px] text-slate-400">Bảo hành 24 tháng</span>
               </div>
-              <div className="flex flex-col items-center p-3 rounded-2xl bg-gray-50 dark:bg-gray-800/60">
-                <Truck className="w-5 h-5 text-emerald-600 mb-1" />
-                <span className="text-xs font-extrabold text-gray-800 dark:text-gray-200">Giao nhanh 2H</span>
-                <span className="text-[10px] text-gray-400">Miễn phí toàn quốc</span>
+              <div className="flex flex-col items-center p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800/50">
+                <Truck className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mb-1" />
+                <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200">Giao nhanh 2H</span>
+                <span className="text-[10px] text-slate-400">Miễn phí toàn quốc</span>
               </div>
-              <div className="flex flex-col items-center p-3 rounded-2xl bg-gray-50 dark:bg-gray-800/60">
-                <Package className="w-5 h-5 text-amber-600 mb-1" />
-                <span className="text-xs font-extrabold text-gray-800 dark:text-gray-200">Lỗi 1 đổi 1</span>
-                <span className="text-[10px] text-gray-400">Trong 30 ngày đầu</span>
+              <div className="flex flex-col items-center p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800/50">
+                <Package className="w-5 h-5 text-amber-600 dark:text-amber-400 mb-1" />
+                <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200">Lỗi 1 đổi 1</span>
+                <span className="text-[10px] text-slate-400">Trong 30 ngày đầu</span>
               </div>
             </div>
           </div>
@@ -364,55 +406,55 @@ const ProductDetail = () => {
         {/* Product Specs & Description */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Specs Table (Left 5 cols) */}
-          <div className="lg:col-span-5 bg-white dark:bg-gray-900 rounded-3xl p-6 sm:p-8 border border-gray-100 dark:border-gray-800 shadow-sm h-fit space-y-5">
-            <h2 className="text-lg font-black text-gray-900 dark:text-white pb-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2">
-              <Smartphone className="w-5 h-5 text-primary" /> Thông Số Kỹ Thuật
+          <div className="lg:col-span-5 bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800/80 shadow-premium h-fit space-y-5">
+            <h2 className="text-lg font-black text-slate-900 dark:text-white pb-3.5 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2.5 font-display">
+              <Smartphone className="w-5 h-5 text-primary-600" /> Thông Số Kỹ Thuật
             </h2>
-            <div className="space-y-3.5 text-xs divide-y divide-gray-100 dark:divide-gray-800">
+            <div className="space-y-3.5 text-xs divide-y divide-slate-100 dark:divide-slate-800/60">
               <div className="flex justify-between pt-2.5 items-center">
-                <span className="font-semibold text-gray-500 flex items-center gap-2"><Smartphone size={15}/> Màn hình</span>
-                <span className="font-bold text-gray-900 dark:text-white text-right max-w-[60%]">{specs.screen || '6.7 inch Super Retina XDR OLED'}</span>
+                <span className="font-semibold text-slate-500 flex items-center gap-2"><Smartphone size={15} className="text-slate-400"/> Màn hình</span>
+                <span className="font-extrabold text-slate-900 dark:text-white text-right max-w-[60%]">{specs.screen || '6.7 inch Super Retina XDR OLED'}</span>
               </div>
               <div className="flex justify-between pt-2.5 items-center">
-                <span className="font-semibold text-gray-500 flex items-center gap-2"><Cpu size={15}/> Vi xử lý (CPU)</span>
-                <span className="font-bold text-gray-900 dark:text-white text-right max-w-[60%]">{specs.cpu || 'Apple A17 Pro 6 nhân'}</span>
+                <span className="font-semibold text-slate-500 flex items-center gap-2"><Cpu size={15} className="text-slate-400"/> Vi xử lý (CPU)</span>
+                <span className="font-extrabold text-slate-900 dark:text-white text-right max-w-[60%]">{specs.cpu || 'Apple A18 Pro 6 nhân'}</span>
               </div>
               <div className="flex justify-between pt-2.5 items-center">
-                <span className="font-semibold text-gray-500 flex items-center gap-2"><HardDrive size={15}/> RAM / Bộ nhớ</span>
-                <span className="font-bold text-gray-900 dark:text-white text-right max-w-[60%]">{`${specs.ram || '8GB'} / ${selectedStorage}`}</span>
+                <span className="font-semibold text-slate-500 flex items-center gap-2"><HardDrive size={15} className="text-slate-400"/> RAM / Bộ nhớ</span>
+                <span className="font-extrabold text-slate-900 dark:text-white text-right max-w-[60%]">{`${specs.ram || '8GB'} / ${selectedStorage}`}</span>
               </div>
               <div className="flex justify-between pt-2.5 items-center">
-                <span className="font-semibold text-gray-500 flex items-center gap-2"><Camera size={15}/> Camera</span>
-                <span className="font-bold text-gray-900 dark:text-white text-right max-w-[60%]">{specs.camera || '48MP + 12MP + 12MP'}</span>
+                <span className="font-semibold text-slate-500 flex items-center gap-2"><Camera size={15} className="text-slate-400"/> Camera</span>
+                <span className="font-extrabold text-slate-900 dark:text-white text-right max-w-[60%]">{specs.camera || '48MP + 48MP + 12MP'}</span>
               </div>
               <div className="flex justify-between pt-2.5 items-center">
-                <span className="font-semibold text-gray-500 flex items-center gap-2"><Battery size={15}/> Pin & Sạc</span>
-                <span className="font-bold text-gray-900 dark:text-white text-right max-w-[60%]">{specs.battery || '4422 mAh, sạc nhanh 30W'}</span>
+                <span className="font-semibold text-slate-500 flex items-center gap-2"><Battery size={15} className="text-slate-400"/> Pin & Sạc</span>
+                <span className="font-extrabold text-slate-900 dark:text-white text-right max-w-[60%]">{specs.battery || '4685 mAh, sạc siêu nhanh'}</span>
               </div>
               <div className="flex justify-between pt-2.5 items-center">
-                <span className="font-semibold text-gray-500">Thương hiệu</span>
-                <span className="font-bold text-primary">{product.brand || 'TechPhone Authentic'}</span>
+                <span className="font-semibold text-slate-500">Thương hiệu</span>
+                <span className="font-black text-primary-600 dark:text-primary-400">{product.brand || 'TechPhone Authentic'}</span>
               </div>
               <div className="flex justify-between pt-2.5 items-center">
-                <span className="font-semibold text-gray-500">Tình trạng máy</span>
-                <span className="font-bold text-emerald-600">Mới 100%, Nguyên seal</span>
+                <span className="font-semibold text-slate-500">Tình trạng máy</span>
+                <span className="font-black text-emerald-600 dark:text-emerald-400">Mới 100%, Nguyên seal</span>
               </div>
             </div>
           </div>
 
           {/* Description (Right 7 cols) */}
-          <div className="lg:col-span-7 bg-white dark:bg-gray-900 rounded-3xl p-6 sm:p-8 border border-gray-100 dark:border-gray-800 shadow-sm space-y-4">
-            <h2 className="text-lg font-black text-gray-900 dark:text-white pb-3 border-b border-gray-100 dark:border-gray-800">
-              📝 Đặc Điểm Nổi Bật & Mô Tả Sản Phẩm
+          <div className="lg:col-span-7 bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800/80 shadow-premium space-y-4">
+            <h2 className="text-lg font-black text-slate-900 dark:text-white pb-3.5 border-b border-slate-100 dark:border-slate-800 font-display">
+              📝 Đặc Điểm Nổi Bật & Mô Tả Chi Tiết
             </h2>
-            <div className="prose dark:prose-invert max-w-none text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-line font-normal space-y-4">
+            <div className="prose dark:prose-invert max-w-none text-sm text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-line font-normal space-y-4">
               {product.description ? (
                 <p>{product.description}</p>
               ) : (
                 <>
-                  <p><strong>{product.name}</strong> mang đến bước đột phá mạnh mẽ về hiệu năng với công nghệ vi xử lý thế hệ mới, đáp ứng hoàn hảo mọi nhu cầu làm việc đa nhiệm, chụp ảnh chuyên nghiệp và giải trí đỉnh cao.</p>
-                  <p>Thiết kế khung viền hợp kim siêu bền bỉ kết hợp mặt kính cường lực chống trầy xước chuẩn quân đội, mang lại cảm giác cầm nắm sang trọng và chắc chắn.</p>
-                  <p>Hệ thống camera tiên tiến hỗ trợ chụp ảnh đêm mượt mà, khả năng zoom quang học sắc nét cùng quay video chuẩn 4K HDR cho trải nghiệm hình ảnh chân thực từng chi tiết.</p>
+                  <p><strong>{product.name}</strong> mang đến bước đột phá vượt bậc về hiệu năng đỉnh cao với công nghệ vi xử lý AI thế hệ mới, đáp ứng trọn vẹn mọi nhu cầu làm việc đa nhiệm chuyên sâu, nhiếp ảnh nghệ thuật và trải nghiệm giải trí sống động.</p>
+                  <p>Thiết kế khung viền Titan chế tác tinh xảo kết hợp mặt kính Ceramic Shield chuẩn quân đội, vừa mang lại sự đẳng cấp sang trọng tuyệt đối vừa tối ưu khả năng chịu va đập bền bỉ theo thời gian.</p>
+                  <p>Hệ thống camera Master Photography đột phá hỗ trợ quay phim chuẩn 4K HDR Dolby Vision, khả năng zoom quang học siêu nét và khả năng thu sáng ban đêm vượt trội.</p>
                 </>
               )}
             </div>
@@ -420,9 +462,9 @@ const ProductDetail = () => {
         </div>
 
         {/* Product Reviews */}
-        <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 sm:p-8 border border-gray-100 dark:border-gray-800 shadow-sm">
-          <h2 className="text-xl font-black text-gray-900 dark:text-white mb-6">
-            ⭐ Đánh Giá & Nhận Xét Khách Hàng
+        <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-10 border border-slate-200/80 dark:border-slate-800/80 shadow-premium">
+          <h2 className="text-xl font-black text-slate-900 dark:text-white mb-6 font-display tracking-tight">
+            ⭐ Đánh Giá & Nhận Xét Từ Khách Hàng
           </h2>
           <ProductReviews productId={product._id || product.id} />
         </div>

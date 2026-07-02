@@ -72,7 +72,6 @@ const Checkout = () => {
       });
       await clearCart();
       localStorage.removeItem('appliedVoucher');
-      toast.success('🎉 Đặt hàng thành công!');
       setSuccessOrder(res.data);
     } catch (err) {
       toast.error(err.message || 'Lỗi đặt hàng');
@@ -83,67 +82,118 @@ const Checkout = () => {
 
   if (successOrder) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 transition-colors">
-        <div className="max-w-lg w-full bg-white dark:bg-gray-900 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-800 p-8 sm:p-10 text-center relative overflow-hidden space-y-6">
-          <div className="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 transition-colors relative overflow-hidden">
+        {/* Ambient background glow */}
+        <div className="absolute top-1/4 -left-32 w-96 h-96 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none animate-pulse-slow" />
+        <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-primary-500/15 rounded-full blur-3xl pointer-events-none animate-float-slow" />
 
-          <div className="relative mx-auto w-20 h-20">
-            <div className="absolute inset-0 bg-emerald-100 dark:bg-emerald-900/40 rounded-full animate-ping opacity-75" />
-            <div className="relative w-20 h-20 bg-gradient-to-tr from-emerald-500 to-teal-400 rounded-full flex items-center justify-center text-white shadow-lg shadow-emerald-500/30 mx-auto">
-              <CheckCircle2 size={40} />
+        <div className="max-w-3xl w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl rounded-[2.5rem] shadow-premium border border-slate-200/80 dark:border-slate-800/80 p-8 sm:p-12 text-center relative z-10 space-y-8 animate-scale-in">
+          {/* Top Success Badge */}
+          <div className="relative mx-auto w-24 h-24">
+            <div className="absolute inset-0 bg-emerald-400 dark:bg-emerald-500 rounded-full animate-ping opacity-30" />
+            <div className="relative w-24 h-24 bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 rounded-full flex items-center justify-center text-white shadow-2xl shadow-emerald-500/40 ring-8 ring-emerald-500/10 mx-auto animate-bounce-subtle">
+              <Sparkles className="absolute -top-1 -right-1 w-6 h-6 text-yellow-300 animate-spin-slow" />
+              <CheckCircle2 size={48} className="drop-shadow-md" />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white">
-              🎉 Đặt Hàng Điện Thoại Thành Công!
+          {/* Heading */}
+          <div className="space-y-3 max-w-xl mx-auto">
+            <span className="px-4 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 text-xs font-black tracking-widest uppercase border border-emerald-200/60 dark:border-emerald-800/60 inline-block shadow-sm">
+              ⚡ Đơn Hàng Đã Xử Lý Thành Công
+            </span>
+            <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 dark:text-white">
+              Cảm Ơn Bạn Đã Đặt Hàng! 🎉
             </h1>
-            <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
-              Cảm ơn bạn đã lựa chọn mua sắm tại TechPhone. Đơn hàng của bạn đang được hệ thống xác nhận và chuẩn bị đóng gói giao siêu tốc 2H.
+            <p className="text-slate-500 dark:text-slate-400 text-sm sm:text-base font-medium leading-relaxed">
+              Hệ thống đã ghi nhận đơn hàng của bạn. Chúng tôi đang khẩn trương kiểm tra chất lượng sản phẩm và chuẩn bị giao siêu tốc 2H đến tận tay bạn.
             </p>
           </div>
 
-          <div className="bg-gray-50 dark:bg-gray-800/60 rounded-2xl p-5 text-left space-y-3 border border-gray-100 dark:border-gray-800 text-sm">
-            <div className="flex justify-between items-center pb-3 border-b border-gray-200 dark:border-gray-700">
-              <span className="text-gray-500">Mã đơn hàng:</span>
-              <span className="font-mono font-black text-primary text-base">
-                #{successOrder.orderCode || successOrder._id?.slice(-6).toUpperCase()}
-              </span>
+          {/* Receipt / Order Ticket */}
+          <div className="bg-slate-50/90 dark:bg-slate-800/50 rounded-3xl p-6 sm:p-8 border border-slate-200/70 dark:border-slate-700/70 text-left space-y-6 shadow-inner relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-primary-600" />
+            
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-slate-200/80 dark:border-slate-700/80">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Mã đơn hàng</span>
+                <span className="font-mono font-black text-xl text-primary-600 dark:text-primary-400 tracking-wider">
+                  #{successOrder.orderCode || successOrder._id?.slice(-6).toUpperCase()}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-4 py-2 rounded-2xl text-xs font-extrabold border border-emerald-500/20 self-start sm:self-auto">
+                <Truck size={16} className="animate-bounce-subtle" />
+                <span>Giao hàng hỏa tốc 2H</span>
+              </div>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-500">Người nhận:</span>
-              <span className="font-bold text-gray-900 dark:text-white">{successOrder.shippingAddress?.name} ({successOrder.shippingAddress?.phone})</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-500">Thanh toán:</span>
-              <span className="font-bold text-gray-900 dark:text-white">
-                {successOrder.paymentMethod === 'cod' ? '💵 Tiền mặt khi nhận hàng (COD)' :
-                 successOrder.paymentMethod === 'bank_transfer' ? '🏦 Chuyển khoản QR Bank' :
-                 successOrder.paymentMethod === 'momo' ? '📱 Ví điện tử MoMo' : '🔐 Cổng VNPay ATM'}
-              </span>
-            </div>
-            <div className="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-700">
-              <span className="font-bold text-gray-700 dark:text-gray-300">Tổng tiền đã đặt:</span>
-              <span className="text-lg font-black text-red-600 dark:text-red-400">
-                {formatPrice(successOrder.totalAmount)}
-              </span>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
+              <div className="space-y-1.5">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Người nhận hàng</span>
+                <p className="font-extrabold text-slate-900 dark:text-white text-base">
+                  {successOrder.shippingAddress?.name}
+                </p>
+                <p className="font-medium text-slate-600 dark:text-slate-300">
+                  📞 {successOrder.shippingAddress?.phone}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
+                  📍 {[successOrder.shippingAddress?.street, successOrder.shippingAddress?.ward, successOrder.shippingAddress?.district, successOrder.shippingAddress?.city].filter(Boolean).join(', ')}
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1">Phương thức thanh toán</span>
+                  <div className="inline-flex items-center gap-2 bg-white dark:bg-slate-900 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-slate-800 dark:text-slate-200 shadow-2xs">
+                    <CreditCard size={16} className="text-primary-500" />
+                    <span>
+                      {successOrder.paymentMethod === 'cod' ? 'Tiền mặt khi nhận hàng (COD)' :
+                       successOrder.paymentMethod === 'bank_transfer' ? 'Chuyển khoản QR Bank' :
+                       successOrder.paymentMethod === 'momo' ? 'Ví điện tử MoMo' : 'Cổng thanh toán VNPay'}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1">Tổng tiền thanh toán</span>
+                  <span className="text-2xl font-black bg-gradient-to-r from-red-600 to-rose-500 dark:from-red-400 dark:to-rose-400 bg-clip-text text-transparent">
+                    {formatPrice(successOrder.totalAmount)}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 pt-2">
+          {/* Action Buttons */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
             <Link
               to="/profile?tab=orders"
-              className="flex-1 bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-indigo-600 text-white font-black py-4 px-6 rounded-2xl shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 transition-all hover:scale-105 text-sm"
+              className="py-4 px-6 rounded-2xl bg-gradient-to-r from-primary-600 via-indigo-600 to-primary-700 hover:from-primary-700 hover:to-indigo-700 text-white font-extrabold text-sm shadow-xl shadow-primary-500/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2.5"
             >
-              <FileText size={18} /> Theo Dõi Trạng Thái Đơn
+              <FileText size={18} /> Xem & Theo Dõi Đơn Hàng
             </Link>
             <Link
-              to="/"
-              className="flex-1 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 font-bold py-4 px-6 rounded-2xl flex items-center justify-center gap-2 transition-colors text-sm"
+              to="/shop"
+              className="py-4 px-6 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-extrabold text-sm border border-slate-200 dark:border-slate-700 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2.5"
             >
-              <Home size={18} className="text-gray-500" /> Về Trang Chủ
+              <Sparkles size={18} className="text-amber-500" /> Tiếp Tục Khám Phá Siêu Phẩm
             </Link>
+          </div>
+
+          {/* Trust Footer */}
+          <div className="grid grid-cols-3 gap-2 pt-4 border-t border-slate-100 dark:border-slate-800/80 text-center text-xs">
+            <div className="flex items-center justify-center gap-1.5 text-slate-600 dark:text-slate-400 font-bold">
+              <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+              <span>Bảo hành 24T</span>
+            </div>
+            <div className="flex items-center justify-center gap-1.5 text-slate-600 dark:text-slate-400 font-bold">
+              <Truck className="w-4 h-4 text-primary-500 shrink-0" />
+              <span>Đổi trả 30 ngày</span>
+            </div>
+            <div className="flex items-center justify-center gap-1.5 text-slate-600 dark:text-slate-400 font-bold">
+              <Tag className="w-4 h-4 text-purple-500 shrink-0" />
+              <span>Hỗ trợ 24/7</span>
+            </div>
           </div>
         </div>
       </div>

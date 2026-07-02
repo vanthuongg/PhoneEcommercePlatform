@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { orderAPI } from '../../services/api';
+import { useNotification } from '../../contexts/NotificationContext';
 import Breadcrumb from '../../components/ui/Breadcrumb';
 import { Package, CheckCircle, Clock, XCircle, Truck, ChevronRight, ArrowLeft, ShoppingBag, AlertTriangle, ShieldCheck, FileText, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -28,6 +29,7 @@ const timelineSteps = [
 const Orders = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { showConfirm } = useNotification();
   const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -65,17 +67,25 @@ const Orders = () => {
   }, [id]);
 
   const handleCancelOrder = async (orderId) => {
-    if (!window.confirm('Bạn có chắc chắn muốn hủy đơn hàng này? Thao tác này không thể hoàn tác.')) return;
-    try {
-      await orderAPI.cancel(orderId, 'Khách hàng yêu cầu hủy đơn');
-      toast.success('Đã hủy đơn hàng thành công');
-      setOrders(orders.map((o) => (o._id === orderId ? { ...o, orderStatus: 'cancelled' } : o)));
-      if (selectedOrder?._id === orderId) {
-        setSelectedOrder({ ...selectedOrder, orderStatus: 'cancelled' });
+    showConfirm({
+      title: 'Xác nhận hủy đơn hàng?',
+      message: 'Bạn có chắc chắn muốn hủy đơn hàng này? Thao tác hủy sẽ không thể hoàn tác.',
+      type: 'danger',
+      confirmText: 'Đồng ý hủy đơn',
+      cancelText: 'Giữ lại đơn',
+      onConfirm: async () => {
+        try {
+          await orderAPI.cancel(orderId, 'Khách hàng yêu cầu hủy đơn');
+          toast.success('Đã hủy đơn hàng thành công');
+          setOrders(orders.map((o) => (o._id === orderId ? { ...o, orderStatus: 'cancelled' } : o)));
+          if (selectedOrder?._id === orderId) {
+            setSelectedOrder({ ...selectedOrder, orderStatus: 'cancelled' });
+          }
+        } catch (err) {
+          toast.error(err.message || 'Không thể hủy đơn hàng');
+        }
       }
-    } catch (err) {
-      toast.error(err.message || 'Không thể hủy đơn hàng');
-    }
+    });
   };
 
   const filteredOrders = activeTab === 'all' ? orders : orders.filter((o) => o.orderStatus === activeTab);

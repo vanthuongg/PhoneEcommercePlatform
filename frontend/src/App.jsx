@@ -11,6 +11,7 @@ import MobileDrawer from './components/layout/MobileDrawer';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import ChatWidget from './components/chat/ChatWidget';
 import CompareBar from './components/product/CompareBar';
+import ScrollToTop from './components/common/ScrollToTop';
 
 // Auth pages
 import Login from './pages/auth/Login';
@@ -75,9 +76,9 @@ const CustomerLayout = ({ children }) => {
 
 // Admin/Manager/Staff layout
 const DashboardLayout = ({ children }) => (
-  <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
+  <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 text-sm">
     <AdminSidebar />
-    <main className="flex-1 overflow-auto">{children}</main>
+    <main className="flex-1 h-screen overflow-y-auto custom-scrollbar">{children}</main>
   </div>
 );
 
@@ -113,8 +114,10 @@ const App = () => {
   }, [navigate]);
 
   return (
-    <Routes>
-      {/* Public routes */}
+    <>
+      <ScrollToTop />
+      <Routes>
+        {/* Public routes */}
       <Route path="/" element={<CustomerLayout><Home /></CustomerLayout>} />
       <Route path="/shop" element={<CustomerLayout><Products /></CustomerLayout>} />
       <Route path="/products" element={<CustomerLayout><Products /></CustomerLayout>} />
@@ -303,6 +306,7 @@ const App = () => {
         </CustomerLayout>
       } />
     </Routes>
+    </>
   );
 };
 

@@ -2,18 +2,27 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { useCart } from '../../contexts/CartContext';
+import { useNotification } from '../../contexts/NotificationContext';
 import { Heart, ShoppingCart, Trash2, ArrowRight } from 'lucide-react';
 
 const Wishlist = () => {
   const { wishlist, removeFromWishlist } = useWishlist();
   const { addToCart } = useCart();
+  const { showConfirm } = useNotification();
 
-  const handleMoveToCart = (product) => {
-    // Mặc định chọn phiên bản dung lượng đầu tiên hoặc 128GB nếu có
+  const handleMoveToCart = (e, product) => {
     const defaultStorage = product.variants?.[0]?.size || '128GB';
     const defaultColor = product.variants?.[0]?.color || 'Mặc định';
-    addToCart(product._id, 1, defaultStorage, defaultColor);
-    removeFromWishlist(product._id);
+    const startX = e?.clientX || window.innerWidth / 2;
+    const startY = e?.clientY || window.innerHeight / 2;
+    addToCart(product._id || product.id, 1, defaultStorage, defaultColor, {
+      name: product.name,
+      image: product.images?.[0],
+      price: product.salePrice > 0 ? product.salePrice : product.price,
+      startX,
+      startY
+    });
+    removeFromWishlist(product._id || product.id);
   };
 
   const formatPrice = (price) => {
@@ -66,7 +75,16 @@ const Wishlist = () => {
                     />
                   </Link>
                   <button
-                    onClick={() => removeFromWishlist(product._id)}
+                    onClick={() => {
+                      showConfirm({
+                        title: 'Xóa khỏi danh sách yêu thích?',
+                        message: `Bạn có chắc chắn muốn xóa "${product.name}" khỏi danh sách yêu thích?`,
+                        type: 'danger',
+                        confirmText: 'Xóa ngay',
+                        cancelText: 'Giữ lại',
+                        onConfirm: () => removeFromWishlist(product._id || product.id)
+                      });
+                    }}
                     className="absolute top-4 right-4 p-2 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-md text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-all shadow-sm"
                     title="Xóa khỏi yêu thích"
                   >
@@ -100,7 +118,7 @@ const Wishlist = () => {
 
               <div className="p-5 pt-0 mt-auto flex gap-2">
                 <button
-                  onClick={() => handleMoveToCart(product)}
+                  onClick={(e) => handleMoveToCart(e, product)}
                   className="flex-1 py-3 px-4 rounded-xl bg-primary text-white font-semibold flex items-center justify-center gap-2 hover:bg-blue-600 transition-all shadow-md shadow-blue-500/20 active:scale-95 text-sm"
                 >
                   <ShoppingCart className="w-4 h-4" />

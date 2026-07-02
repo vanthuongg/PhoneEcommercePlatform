@@ -7,3 +7,4 @@ build/
 coverage/
 *.log
 .agent/
+DESIGN.md

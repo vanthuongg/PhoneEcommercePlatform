@@ -28,10 +28,8 @@ export const WishlistProvider = ({ children }) => {
     setWishlist((prev) => {
       const exists = prev.some((item) => item._id === product._id);
       if (exists) {
-        toast.success('Đã xóa khỏi danh sách yêu thích');
         return prev.filter((item) => item._id !== product._id);
       } else {
-        toast.success('Đã thêm vào danh sách yêu thích');
         return [...prev, { ...product, addedAt: new Date().toISOString() }];
       }
     });
@@ -44,7 +42,6 @@ export const WishlistProvider = ({ children }) => {
       return;
     }
     setWishlist((prev) => prev.filter((item) => item._id !== productId));
-    toast.success('Đã xóa khỏi danh sách yêu thích');
   }, [isAuthenticated, navigate]);
 
   const isInWishlist = useCallback((productId) => {

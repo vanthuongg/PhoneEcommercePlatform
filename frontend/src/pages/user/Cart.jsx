@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
+import { useNotification } from '../../contexts/NotificationContext';
 import Breadcrumb from '../../components/ui/Breadcrumb';
 import RecentlyViewed from '../../components/product/RecentlyViewed';
 import VoucherPickerModal from '../../components/ui/VoucherPickerModal';
@@ -12,6 +13,7 @@ const formatPrice = (price) =>
 
 const Cart = () => {
   const { cart, loading, updateQuantity, removeItem } = useCart();
+  const { showConfirm } = useNotification();
   const navigate = useNavigate();
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
   const [voucherCode, setVoucherCode] = useState(localStorage.getItem('appliedVoucher') || '');
@@ -63,10 +65,19 @@ const Cart = () => {
   };
 
   const handleRemoveVoucher = () => {
-    setAppliedVoucher(null);
-    setVoucherCode('');
-    localStorage.removeItem('appliedVoucher');
-    toast.info('Đã gỡ bỏ mã giảm giá');
+    showConfirm({
+      title: 'Hủy áp dụng mã giảm giá?',
+      message: 'Bạn có chắc chắn muốn gỡ bỏ mã ưu đãi đang áp dụng cho đơn hàng này?',
+      type: 'warning',
+      confirmText: 'Đồng ý gỡ',
+      cancelText: 'Giữ lại',
+      onConfirm: () => {
+        setAppliedVoucher(null);
+        setVoucherCode('');
+        localStorage.removeItem('appliedVoucher');
+        toast.info('Đã gỡ bỏ mã giảm giá');
+      }
+    });
   };
 
   if (!cart.items?.length) {
@@ -184,7 +195,16 @@ const Cart = () => {
                       {formatPrice(item.price * item.quantity)}
                     </span>
                     <button
-                      onClick={() => removeItem(item.product?._id, item.size, item.color)}
+                      onClick={() => {
+                        showConfirm({
+                          title: 'Xóa khỏi giỏ hàng?',
+                          message: `Bạn có chắc chắn muốn xóa "${item.product?.name || 'sản phẩm'}" khỏi giỏ hàng?`,
+                          type: 'danger',
+                          confirmText: 'Xóa ngay',
+                          cancelText: 'Quay lại',
+                          onConfirm: () => removeItem(item.product?._id, item.size, item.color)
+                        });
+                      }}
                       disabled={loading}
                       className="p-2.5 rounded-2xl bg-red-50 dark:bg-red-900/30 text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-sm active:scale-95"
                       title="Xóa khỏi giỏ hàng"

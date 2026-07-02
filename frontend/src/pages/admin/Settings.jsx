@@ -86,21 +86,21 @@ const Settings = () => {
   ];
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Cài đặt hệ thống</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Quản lý cấu hình website và tài khoản Admin</p>
+    <div className="p-3.5 sm:p-4 animate-fade-in">
+      <div className="mb-4">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">Cài đặt hệ thống</h1>
+        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-0.5">Quản lý cấu hình website và tài khoản Admin</p>
       </div>
 
-      <div className="flex gap-6">
+      <div className="flex flex-col sm:flex-row gap-4">
         {/* Tab sidebar */}
-        <div className="w-52 flex-shrink-0">
-          <nav className="card p-2 space-y-1">
+        <div className="sm:w-44 flex-shrink-0">
+          <nav className="card p-1.5 space-y-0.5">
             {tabs.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
                 onClick={() => setActiveTab(id)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                   activeTab === id ? 'bg-primary-50 text-primary-700' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
                 }`}
               >
@@ -112,15 +112,15 @@ const Settings = () => {
         </div>
 
         {/* Tab content */}
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           {/* Account / Change Password */}
           {activeTab === 'account' && (
-            <div className="card p-6">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">Thông tin tài khoản</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Thông tin cơ bản của quản trị viên</p>
+            <div className="card p-4 sm:p-5">
+              <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">Thông tin tài khoản</h2>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">Thông tin cơ bản của quản trị viên</p>
 
               {/* Info */}
-              <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-5 mb-6 flex items-center gap-4">
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-3.5 sm:p-4 mb-4 flex items-center gap-3.5">
                 <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-700 rounded-full flex items-center justify-center text-white text-2xl font-bold">
                   {user?.name?.[0]?.toUpperCase()}
                 </div>
@@ -177,85 +177,85 @@ const Settings = () => {
 
           {/* System settings */}
           {activeTab === 'system' && (
-            <div className="card p-6">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">Cài đặt hệ thống</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Cấu hình chung cho website</p>
-              <form onSubmit={handleSaveSettings} className="space-y-5 max-w-lg">
-                <div className="grid grid-cols-2 gap-4">
+            <div className="card p-4 sm:p-5">
+              <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">Cài đặt hệ thống</h2>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">Cấu hình chung cho website</p>
+              <form onSubmit={handleSaveSettings} className="space-y-3.5 max-w-lg">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Tên website</label>
+                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Tên website</label>
                     <input
                       value={siteSettings.siteName}
                       onChange={(e) => setSiteSettings({ ...siteSettings, siteName: e.target.value })}
-                      className="input-field"
+                      className="input-field py-1.5 px-3 text-xs sm:text-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Email liên hệ</label>
+                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Email liên hệ</label>
                     <input
                       type="email"
                       value={siteSettings.siteEmail}
                       onChange={(e) => setSiteSettings({ ...siteSettings, siteEmail: e.target.value })}
-                      className="input-field"
+                      className="input-field py-1.5 px-3 text-xs sm:text-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Đơn vị tiền tệ</label>
+                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Đơn vị tiền tệ</label>
                     <select
                       value={siteSettings.currency}
                       onChange={(e) => setSiteSettings({ ...siteSettings, currency: e.target.value })}
-                      className="input-field"
+                      className="input-field py-1.5 px-3 text-xs sm:text-sm"
                     >
                       <option value="VND">VND - Việt Nam Đồng</option>
                       <option value="USD">USD - US Dollar</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Múi giờ</label>
+                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Múi giờ</label>
                     <select
                       value={siteSettings.timezone}
                       onChange={(e) => setSiteSettings({ ...siteSettings, timezone: e.target.value })}
-                      className="input-field"
+                      className="input-field py-1.5 px-3 text-xs sm:text-sm"
                     >
                       <option value="Asia/Ho_Chi_Minh">Asia/Ho Chi Minh (GMT+7)</option>
                       <option value="UTC">UTC</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Ngưỡng tồn kho thấp</label>
+                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Ngưỡng tồn kho thấp</label>
                     <input
                       type="number"
                       value={siteSettings.lowStockThreshold}
                       onChange={(e) => setSiteSettings({ ...siteSettings, lowStockThreshold: Number(e.target.value) })}
-                      className="input-field"
+                      className="input-field py-1.5 px-3 text-xs sm:text-sm"
                       min={1}
                     />
                   </div>
                 </div>
 
-                <div className="space-y-3 pt-2">
+                <div className="space-y-2 pt-1">
                   {[
                     { key: 'maintenanceMode', label: 'Chế độ bảo trì', desc: 'Tạm thời đóng website để bảo trì', danger: true },
                     { key: 'allowRegistration', label: 'Cho phép đăng ký', desc: 'Khách hàng có thể tự đăng ký tài khoản' },
                     { key: 'orderConfirmEmail', label: 'Email xác nhận đơn', desc: 'Gửi email xác nhận khi có đơn hàng mới' },
                   ].map(({ key, label, desc, danger }) => (
-                    <label key={key} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <label key={key} className="flex items-center justify-between p-2.5 bg-gray-50 dark:bg-gray-900 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                       <div>
-                        <p className={`text-sm font-medium ${danger ? 'text-red-600' : 'text-gray-900 dark:text-gray-100'}`}>{label}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{desc}</p>
+                        <p className={`text-xs font-medium ${danger ? 'text-red-600' : 'text-gray-900 dark:text-gray-100'}`}>{label}</p>
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">{desc}</p>
                       </div>
                       <div
                         onClick={() => setSiteSettings({ ...siteSettings, [key]: !siteSettings[key] })}
-                        className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer ${siteSettings[key] ? (danger ? 'bg-red-500' : 'bg-primary-600') : 'bg-gray-300'}`}
+                        className={`relative w-9 h-5 rounded-full transition-colors cursor-pointer ${siteSettings[key] ? (danger ? 'bg-red-500' : 'bg-primary-600') : 'bg-gray-300'}`}
                       >
-                        <div className={`absolute top-1 w-4 h-4 bg-white dark:bg-gray-800 rounded-full shadow transition-transform ${siteSettings[key] ? 'translate-x-6' : 'translate-x-1'}`} />
+                        <div className={`absolute top-0.5 w-4 h-4 bg-white dark:bg-gray-800 rounded-full shadow transition-transform ${siteSettings[key] ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
                       </div>
                     </label>
                   ))}
                 </div>
 
-                <button type="submit" disabled={saving} className="btn-primary flex items-center gap-2">
-                  {saving ? <Loader2 className="w-4 h-4 spinner" /> : <Save className="w-4 h-4" />}
+                <button type="submit" disabled={saving} className="btn-primary py-1.5 px-4 text-xs flex items-center gap-1.5">
+                  {saving ? <Loader2 className="w-3.5 h-3.5 spinner" /> : <Save className="w-3.5 h-3.5" />}
                   Lưu cài đặt
                 </button>
               </form>
@@ -264,10 +264,10 @@ const Settings = () => {
 
           {/* Notifications */}
           {activeTab === 'notifications' && (
-            <div className="card p-6">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">Cài đặt thông báo</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Chọn loại thông báo bạn muốn nhận</p>
-              <div className="space-y-3 max-w-lg">
+            <div className="card p-4 sm:p-5">
+              <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">Cài đặt thông báo</h2>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">Chọn loại thông báo bạn muốn nhận</p>
+              <div className="space-y-2 max-w-lg">
                 {[
                   { label: 'Đơn hàng mới', desc: 'Nhận thông báo khi có đơn hàng mới được tạo' },
                   { label: 'Đơn hàng bị hủy', desc: 'Nhận thông báo khi khách hàng hủy đơn' },
@@ -276,29 +276,29 @@ const Settings = () => {
                   { label: 'Đánh giá mới', desc: 'Nhận thông báo khi có đánh giá sản phẩm mới' },
                   { label: 'Báo cáo hàng tuần', desc: 'Nhận báo cáo tổng kết mỗi tuần qua email' },
                 ].map(({ label, desc }, i) => (
-                  <label key={i} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                  <label key={i} className="flex items-center justify-between p-2.5 bg-gray-50 dark:bg-gray-900 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                     <div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{label}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{desc}</p>
+                      <p className="text-xs font-medium text-gray-900 dark:text-gray-100">{label}</p>
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">{desc}</p>
                     </div>
-                    <div className="w-5 h-5 rounded bg-primary-600 flex items-center justify-center flex-shrink-0">
+                    <div className="w-4.5 h-4.5 rounded bg-primary-600 flex items-center justify-center flex-shrink-0">
                       <Check className="w-3 h-3 text-white" />
                     </div>
                   </label>
                 ))}
               </div>
-              <button className="btn-primary mt-6 flex items-center gap-2">
-                <Save className="w-4 h-4" /> Lưu cài đặt
+              <button className="btn-primary mt-4 py-1.5 px-4 text-xs flex items-center gap-1.5">
+                <Save className="w-3.5 h-3.5" /> Lưu cài đặt
               </button>
             </div>
           )}
 
           {/* Security */}
           {activeTab === 'security' && (
-            <div className="card p-6">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">Bảo mật hệ thống</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Thông tin và cài đặt bảo mật</p>
-              <div className="space-y-4 max-w-lg">
+            <div className="card p-4 sm:p-5">
+              <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">Bảo mật hệ thống</h2>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">Thông tin và cài đặt bảo mật</p>
+              <div className="space-y-2 max-w-lg">
                 {[
                   { label: 'Xác thực hai yếu tố (2FA)', desc: 'Thêm lớp bảo mật cho tài khoản admin', status: 'Chưa bật', danger: true },
                   { label: 'Phiên đăng nhập', desc: 'JWT Token — hết hạn sau 7 ngày', status: 'Đang hoạt động', ok: true },
@@ -307,15 +307,15 @@ const Settings = () => {
                   { label: 'Rate Limiting', desc: 'Giới hạn số request từ mỗi IP', status: 'Chưa cấu hình', warn: true },
                   { label: 'HTTPS', desc: 'Mã hóa kết nối SSL/TLS', status: 'Development mode', warn: true },
                 ].map(({ label, desc, status, ok, warn, danger }) => (
-                  <div key={label} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-xl">
-                    <div className="flex items-center gap-3">
+                  <div key={label} className="flex items-center justify-between p-2.5 bg-gray-50 dark:bg-gray-900 rounded-xl">
+                    <div className="flex items-center gap-2.5">
                       <div className={`w-2 h-2 rounded-full flex-shrink-0 ${ok ? 'bg-emerald-500' : warn ? 'bg-amber-500' : 'bg-red-500'}`} />
                       <div>
-                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{label}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{desc}</p>
+                        <p className="text-xs font-medium text-gray-900 dark:text-gray-100">{label}</p>
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">{desc}</p>
                       </div>
                     </div>
-                    <span className={`badge ${ok ? 'badge-success' : warn ? 'badge-warning' : 'badge-danger'}`}>{status}</span>
+                    <span className={`badge text-[10px] py-0.5 px-2 ${ok ? 'badge-success' : warn ? 'badge-warning' : 'badge-danger'}`}>{status}</span>
                   </div>
                 ))}
               </div>

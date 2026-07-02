@@ -264,10 +264,40 @@ const updateOrderStatus = async (req, res) => {
     const order = await Order.findById(req.params.id).populate('user', 'name email');
     if (!order) return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng' });
 
+    const previousStatus = order.orderStatus;
     order.orderStatus = status;
     if (status === 'delivered') {
       order.paymentStatus = 'paid';
       order.deliveredAt = Date.now();
+    }
+
+    // Restore stock if order is cancelled by staff/manager/admin
+    if (status === 'cancelled' && previousStatus !== 'cancelled') {
+      for (const item of order.items) {
+        const productToUpdate = await Product.findById(item.product);
+        if (productToUpdate) {
+          if (productToUpdate.variants && productToUpdate.variants.length > 0) {
+            const matchingVariant = productToUpdate.variants.find(
+              v => (v.storage === item.size || v.name === item.size) && v.color === item.color
+            );
+            if (matchingVariant) {
+              matchingVariant.stock += item.quantity;
+            }
+          } else {
+            productToUpdate.stock += item.quantity;
+          }
+          productToUpdate.sold = Math.max(0, (productToUpdate.sold || 0) - item.quantity);
+          await productToUpdate.save({ validateBeforeSave: false });
+        }
+      }
+
+      if (order.voucherCode) {
+        const voucher = await Voucher.findOne({ code: order.voucherCode });
+        if (voucher && voucher.usedCount > 0) {
+          voucher.usedCount -= 1;
+          await voucher.save({ validateBeforeSave: false });
+        }
+      }
     }
 
     // Cập nhật timeline

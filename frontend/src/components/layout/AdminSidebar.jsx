@@ -5,7 +5,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import {
   LayoutDashboard, ShoppingBag, Users, Tag, Package,
   BarChart2, Settings, LogOut, ChevronRight, Store, Moon, Sun,
-  Award, Gift, Image, HelpCircle, FileText
+  Award, Gift, Image, HelpCircle, FileText, Smartphone
 } from 'lucide-react';
 
 const adminLinks = [
@@ -44,7 +44,11 @@ const staffLinks = [
 
 const roleLinkMap = { admin: adminLinks, manager: managerLinks, staff: staffLinks };
 const roleLabel = { admin: 'Quản trị viên', manager: 'Quản lý', staff: 'Nhân viên' };
-const roleColor = { admin: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300', manager: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300', staff: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300' };
+const roleColor = {
+  admin: 'bg-purple-500/20 text-purple-300 border border-purple-500/30',
+  manager: 'bg-blue-500/20 text-blue-300 border border-blue-500/30',
+  staff: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+};
 
 const AdminSidebar = () => {
   const { user, logout } = useAuth();
@@ -53,16 +57,20 @@ const AdminSidebar = () => {
   const links = roleLinkMap[user?.role] || [];
 
   return (
-    <aside className="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col min-h-screen shrink-0 transition-colors">
+    <aside className="w-56 bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur-2xl border-r border-slate-800/80 flex flex-col min-h-screen shrink-0 transition-all duration-300 shadow-2xl relative z-30">
+      {/* Decorative gradient glow orb */}
+      <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-primary-600/15 via-indigo-600/5 to-transparent pointer-events-none" />
+
       {/* Header */}
-      <div className="p-5 border-b border-gray-100 dark:border-gray-800">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center shadow">
-            <span className="text-white font-black text-lg">{user?.name?.[0]?.toUpperCase() || 'A'}</span>
+      <div className="p-3.5 border-b border-slate-800/80 bg-slate-950/50 relative z-10">
+        <div className="flex items-center gap-2.5 group cursor-pointer">
+          <div className="w-9 h-9 bg-gradient-to-tr from-primary-600 via-indigo-600 to-primary-500 rounded-xl flex items-center justify-center shadow-glow group-hover:scale-105 group-hover:rotate-3 transition-all duration-300">
+            <Smartphone className="w-5 h-5 text-white stroke-[2.5] animate-bounce-subtle" />
           </div>
-          <div className="min-w-0">
-            <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{user?.name || 'Quản trị'}</p>
-            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider inline-block mt-0.5 ${roleColor[user?.role] || roleColor.admin}`}>
+          <div className="min-w-0 flex-1">
+            <p className="text-[13px] font-black text-white truncate font-display tracking-tight group-hover:text-primary-400 transition-colors">{user?.name || 'Quản trị'}</p>
+            <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider inline-flex items-center gap-1 mt-0.5 shadow-sm ${roleColor[user?.role] || roleColor.admin}`}>
+              <span className="w-1.5 h-1.5 rounded-full bg-current animate-ping inline-block mr-0.5" />
               {roleLabel[user?.role] || user?.role}
             </span>
           </div>
@@ -70,28 +78,33 @@ const AdminSidebar = () => {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-3 overflow-y-auto">
-        <ul className="space-y-1">
-          {links.map((link) => {
+      <nav className="flex-1 p-2 overflow-y-auto custom-scrollbar relative z-10">
+        <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 px-2.5 mb-1.5 mt-1 flex items-center justify-between">
+          <span>Menu Chính</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-pulse" />
+        </div>
+        <ul className="space-y-0.5">
+          {links.map((link, index) => {
             const Icon = link.icon;
             return (
-              <li key={link.path}>
+              <li key={link.path} style={{ animationDelay: `${index * 20}ms` }} className="animate-fade-in">
                 <NavLink
                   to={link.path}
                   end={link.exact}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group ${
+                    `flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-[13px] font-semibold transition-all duration-300 group relative overflow-hidden ${
                       isActive
-                        ? 'bg-primary-600 text-white shadow-md shadow-primary-500/20 font-bold'
-                        : 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800'
+                        ? 'bg-gradient-to-r from-primary-600 via-indigo-600 to-primary-500 text-white shadow-md shadow-primary-500/30 scale-[1.01]'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-800/80 hover:translate-x-1'
                     }`
                   }
                 >
                   {({ isActive }) => (
                     <>
-                      <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white'}`} />
-                      <span className="flex-1 truncate">{link.label}</span>
-                      {isActive && <ChevronRight className="w-4 h-4 text-white shrink-0" />}
+                      {isActive && <div className="absolute left-0 top-1 bottom-1 w-1 bg-amber-400 rounded-r-full shadow-glow-accent animate-pulse" />}
+                      <Icon className={`w-4 h-4 shrink-0 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-primary-400'}`} />
+                      <span className="flex-1 truncate tracking-wide">{link.label}</span>
+                      {isActive && <ChevronRight className="w-3.5 h-3.5 text-white shrink-0 opacity-90 animate-slide-in-right" />}
                     </>
                   )}
                 </NavLink>
@@ -102,25 +115,32 @@ const AdminSidebar = () => {
       </nav>
 
       {/* Footer actions */}
-      <div className="p-3 border-t border-gray-100 dark:border-gray-800 space-y-1 bg-gray-50/50 dark:bg-gray-900">
+      <div className="p-2.5 border-t border-slate-800/80 space-y-1 bg-slate-950/80 relative z-10">
         <button 
           onClick={toggleTheme}
-          className="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-bold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-800/90 transition-all duration-300 border border-slate-800/80 hover:border-slate-700 shadow-sm group"
         >
-          {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-500" /> : <Moon className="w-4 h-4 text-indigo-500" />}
+          {theme === 'dark' ? (
+            <Sun className="w-3.5 h-3.5 text-amber-400 animate-spin-slow group-hover:scale-110 transition-transform" />
+          ) : (
+            <Moon className="w-3.5 h-3.5 text-blue-400 group-hover:scale-110 transition-transform" />
+          )}
           <span>Chế độ Sáng / Tối</span>
         </button>
 
-        <NavLink to="/" className="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-bold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-          <Store className="w-4 h-4 text-emerald-500" />
+        <NavLink 
+          to="/" 
+          className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-800/90 transition-all duration-300 border border-slate-800/80 hover:border-emerald-500/40 shadow-sm group"
+        >
+          <Store className="w-3.5 h-3.5 text-emerald-400 group-hover:scale-110 transition-transform" />
           <span>Về Sàn bán hàng</span>
         </NavLink>
 
         <button
           onClick={() => { logout(navigate); }}
-          className="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors mt-1"
+          className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-bold text-red-400 hover:text-white hover:bg-red-500/15 hover:border-red-500/40 transition-all duration-300 border border-transparent group"
         >
-          <LogOut className="w-4 h-4" />
+          <LogOut className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
           <span>Đăng xuất</span>
         </button>
       </div>

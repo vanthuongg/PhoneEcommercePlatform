@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
 import { productAPI, categoryAPI } from '../../services/api';
 import { Search, AlertTriangle, Package, Edit, X, Loader2, History, ArrowDownLeft, ArrowUpRight, Plus, Sparkles, Filter } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -14,6 +15,10 @@ const initialHistory = [
 ];
 
 const Inventory = () => {
+  const { user } = useAuth();
+  const roleLabel = { admin: 'Quản trị viên', manager: 'Quản lý', staff: 'Nhân viên kho' };
+  const authorName = user ? `${user.name} (${roleLabel[user.role] || user.role})` : 'Quản trị viên';
+
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -75,7 +80,7 @@ const Inventory = () => {
           qty: diff,
           note: editStock.note || (diff > 0 ? 'Nhập bổ sung' : 'Điều chỉnh giảm'),
           date: new Date().toLocaleString('vi-VN').slice(0, 16),
-          user: 'Quản trị viên',
+          user: authorName,
         };
         const updatedHistory = [newLog, ...historyList];
         setHistoryList(updatedHistory);
@@ -94,10 +99,29 @@ const Inventory = () => {
   const handleUpdateVariantStock = async (variantId, newStock) => {
     if (newStock < 0) { toast.error('Tồn kho không thể âm'); return; }
     try {
+      const oldV = editStock?.variantsState?.find(v => (v._id || v.id) === variantId);
+      const oldStockNum = oldV ? Number(oldV.stock) : 0;
+      const diff = Number(newStock) - oldStockNum;
+
       const res = await productAPI.updateStock(editStock.product._id, Number(newStock), variantId);
       setProducts(products.map(p => p._id === editStock.product._id ? res.data : p));
       toast.success('Cập nhật biến thể thành công!');
       
+      if (diff !== 0) {
+        const newLog = {
+          id: Date.now(),
+          type: diff > 0 ? 'import' : 'export',
+          product: `${editStock.product.name} (Màu: ${oldV?.color || ''}, ROM: ${oldV?.storage || ''})`,
+          qty: diff,
+          note: diff > 0 ? 'Nhập bổ sung biến thể' : 'Điều chỉnh giảm biến thể',
+          date: new Date().toLocaleString('vi-VN').slice(0, 16),
+          user: authorName,
+        };
+        const updatedHistory = [newLog, ...historyList];
+        setHistoryList(updatedHistory);
+        localStorage.setItem('inventory_history', JSON.stringify(updatedHistory));
+      }
+
       // Update local state to reflect change in modal without closing
       const updatedProduct = res.data;
       setEditStock({ ...editStock, product: updatedProduct, variantsState: updatedProduct.variants });
@@ -242,13 +266,13 @@ const Inventory = () => {
                           <p className="font-extrabold text-sm text-gray-900 dark:text-white line-clamp-1">{p.name}</p>
                           <div className="flex gap-1 mt-1">
                             {p.colors?.slice(0, 3).map((col, idx) => (
-                              <span key={idx} className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-[10px] text-gray-600 dark:text-gray-400 font-bold">{col}</span>
+                              <span key={idx} className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-[10px] text-gray-600 dark:text-gray-400 font-bold">{typeof col === 'object' ? col?.name || '' : col}</span>
                             ))}
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="py-4 font-bold text-gray-700 dark:text-gray-300">{p.brand?.name || p.brand || 'Smartphone'}</td>
+                    <td className="py-4 font-bold text-gray-700 dark:text-gray-300">{typeof p.brand === 'object' ? p.brand?.name || '' : p.brand || 'Smartphone'}</td>
                     <td className="py-4 font-black text-primary">{formatPrice(p.salePrice > 0 ? p.salePrice : p.price)}</td>
                     <td className="py-4">
                       <span className={`text-base font-black ${p.stock === 0 ? 'text-red-600' : p.stock <= 10 ? 'text-amber-600 animate-pulse' : 'text-emerald-600'}`}>
@@ -257,7 +281,7 @@ const Inventory = () => {
                     </td>
                     <td className="py-4">
                       <div className="text-[11px] text-gray-500 space-y-0.5">
-                        <div>Dung lượng: <strong className="text-gray-800 dark:text-gray-200">{p.storage?.join(', ') || '256GB, 512GB'}</strong></div>
+                        <div>Dung lượng: <strong className="text-gray-800 dark:text-gray-200">{Array.isArray(p.storage) ? p.storage.join(', ') : (p.variants?.map(v => v.storage).filter(Boolean).join(', ') || '256GB, 512GB')}</strong></div>
                         <div>Đã bán: <strong className="text-primary">{p.sold || 0}</strong> máy</div>
                       </div>
                     </td>

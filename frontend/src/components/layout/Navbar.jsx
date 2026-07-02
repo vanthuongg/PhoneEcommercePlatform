@@ -102,44 +102,48 @@ const Navbar = ({ onOpenMobileMenu }) => {
   };
 
   return (
-    <header className="sticky top-0 z-40 glass-panel shadow-sm transition-colors">
+    <header className="sticky top-0 z-50 bg-white/85 dark:bg-slate-900/85 backdrop-blur-2xl shadow-premium dark:shadow-premium-dark border-b border-slate-200/60 dark:border-slate-800/60 transition-all duration-300">
       {/* Top bar mini */}
-      <div className="bg-gradient-to-r from-primary via-blue-600 to-indigo-700 text-white text-xs py-1.5 px-4 hidden sm:block">
-        <div className="max-w-7xl mx-auto flex items-center justify-between font-medium">
+      <div className="bg-gradient-to-r from-primary-600 via-indigo-600 via-purple-600 to-primary-700 text-white text-xs py-2 px-4 hidden sm:block shadow-inner relative overflow-hidden animate-gradient-x">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white/15 via-transparent to-transparent pointer-events-none" />
+        <div className="max-w-7xl mx-auto flex items-center justify-between font-bold relative z-10">
           <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1.5">🔥 Hệ thống Bán lẻ Điện thoại & Phụ kiện chính hãng</span>
-            <span className="opacity-60">|</span>
-            <span>Hotline: 1800 6688 (Miễn phí)</span>
+            <span className="inline-flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+              <span>🔥 Hệ thống Bán lẻ Điện thoại & Phụ kiện chính hãng cao cấp</span>
+            </span>
+            <span className="opacity-40">|</span>
+            <span className="font-extrabold text-amber-200 tracking-wide animate-pulse">Hotline: 1800 6688 (Miễn phí 24/7)</span>
           </div>
           <div className="flex items-center gap-4">
-            <button onClick={toggleTheme} className="flex items-center gap-1 hover:underline">
-              {theme === 'dark' ? <Sun size={13} className="text-amber-300" /> : <Moon size={13} />}
-              {theme === 'dark' ? 'Giao diện Sáng' : 'Giao diện Tối'}
+            <button onClick={toggleTheme} className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 hover:bg-white/30 transition-all duration-300 text-[11px] font-extrabold shadow-sm active:scale-95 group">
+              {theme === 'dark' ? <Sun size={14} className="text-amber-300 animate-spin-slow group-hover:scale-125 transition-transform" /> : <Moon size={14} className="text-blue-100 group-hover:scale-125 transition-transform" />}
+              <span>{theme === 'dark' ? 'Giao diện Sáng' : 'Giao diện Tối'}</span>
             </button>
           </div>
         </div>
       </div>
 
       {/* Main header */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4 sm:gap-6">
         {/* Mobile Hamburger & Logo */}
         <div className="flex items-center gap-3">
           <button
             onClick={onOpenMobileMenu}
-            className="md:hidden p-2.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="md:hidden p-2.5 rounded-2xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors active:scale-95"
           >
             <Menu size={24} />
           </button>
 
-          <Link to="/" className="flex items-center gap-2.5 group shrink-0">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-primary to-blue-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-all">
-              <Smartphone className="w-6 h-6 stroke-[2.5]" />
+          <Link to="/" className="flex items-center gap-3 group shrink-0">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-primary-600 via-indigo-600 to-primary-500 flex items-center justify-center text-white shadow-lg shadow-primary-500/30 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+              <Smartphone className="w-6 h-6 stroke-[2.5] animate-bounce-subtle" />
             </div>
             <div>
-              <span className="text-2xl font-extrabold font-display tracking-tight bg-gradient-to-r from-primary-600 to-blue-500 bg-clip-text text-transparent">
+              <span className="text-2xl sm:text-3xl font-black font-display tracking-tight bg-gradient-to-r from-primary-600 via-indigo-600 to-primary-500 dark:from-primary-400 dark:to-indigo-400 bg-clip-text text-transparent transition-all duration-300">
                 TechPhone
               </span>
-              <span className="block text-[10px] text-slate-600 dark:text-slate-300 font-bold uppercase tracking-widest -mt-1">
+              <span className="block text-[10px] text-primary-600 dark:text-primary-400 font-extrabold uppercase tracking-[0.25em] -mt-1 group-hover:tracking-[0.3em] transition-all duration-300">
                 Store
               </span>
             </div>
@@ -148,18 +152,19 @@ const Navbar = ({ onOpenMobileMenu }) => {
 
         {/* Thanh tìm kiếm trung tâm lớn */}
         <div className="flex-1 max-w-2xl mx-auto relative" ref={searchRef}>
-          <form onSubmit={(e) => handleSearchSubmit(e)} className="relative flex items-center">
+          <form onSubmit={(e) => handleSearchSubmit(e)} className="relative flex items-center group">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-primary-500 to-indigo-500 rounded-2xl opacity-0 group-focus-within:opacity-100 transition duration-500 blur-sm pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setShowSearchDropdown(true)}
-              placeholder={t('search_placeholder')}
-              className="w-full pl-5 pr-14 py-3 bg-slate-100/50 dark:bg-slate-800/80 border-2 border-transparent focus:border-primary-500 rounded-2xl text-sm focus:bg-white dark:focus:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none transition-all shadow-inner"
+              placeholder={t('search_placeholder') || 'Tìm kiếm điện thoại, phụ kiện chính hãng...'}
+              className="relative w-full pl-5 pr-14 py-3.5 bg-slate-100/90 dark:bg-slate-800/90 border-2 border-transparent focus:border-primary-500 rounded-2xl text-sm font-semibold focus:bg-white dark:focus:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none transition-all duration-300 shadow-inner"
             />
             <button
               type="submit"
-              className="absolute right-1.5 p-2.5 bg-primary hover:bg-blue-600 text-white rounded-xl transition-all flex items-center justify-center shadow-md shadow-blue-500/20 active:scale-95"
+              className="absolute right-1.5 p-2.5 bg-gradient-to-r from-primary-600 via-indigo-600 to-primary-500 hover:from-primary-700 hover:to-indigo-700 text-white rounded-xl transition-all duration-300 flex items-center justify-center shadow-md shadow-primary-500/30 hover:scale-105 active:scale-95 z-10"
             >
               <Search size={18} />
             </button>
@@ -167,19 +172,19 @@ const Navbar = ({ onOpenMobileMenu }) => {
 
           {/* Dropdown Gợi ý & Sản phẩm nổi bật */}
           {showSearchDropdown && (
-            <div className="absolute left-0 right-0 top-14 bg-white dark:bg-slate-900 rounded-3xl shadow-glass dark:shadow-glass-dark border border-slate-100 dark:border-slate-800 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150">
+            <div className="absolute left-0 right-0 top-14 bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl rounded-3xl shadow-premium dark:shadow-premium-dark border border-slate-200/80 dark:border-slate-800/80 overflow-hidden z-50 animate-fade-in">
               {/* Gợi ý sản phẩm khi gõ */}
               {suggestions.length > 0 ? (
                 <div className="p-4">
                   <div className="text-xs font-bold text-slate-400 uppercase tracking-wider px-3 mb-3 flex items-center gap-1.5">
-                    <TrendingUp size={15} className="text-primary" /> Kết quả tìm kiếm cho "{searchQuery}"
+                    <TrendingUp size={15} className="text-primary-500" /> Kết quả tìm kiếm cho "{searchQuery}"
                   </div>
                   <div className="space-y-1.5">
                     {suggestions.map((prod) => (
                       <div
                         key={prod._id || prod.id}
                         onClick={() => { setShowSearchDropdown(false); navigate(`/product/${prod._id || prod.id}`); }}
-                        className="flex items-center gap-3 p-2.5 hover:bg-slate-50 dark:hover:bg-slate-800/80 rounded-2xl cursor-pointer transition-all group"
+                        className="flex items-center gap-3 p-2.5 hover:bg-slate-50 dark:hover:bg-slate-800/80 rounded-2xl cursor-pointer transition-all group border border-transparent hover:border-slate-200/60 dark:hover:border-slate-700/60"
                       >
                         <img src={prod.images?.[0] || 'https://via.placeholder.com/40'} alt={prod.name} className="w-12 h-12 object-contain rounded-xl bg-slate-50 dark:bg-slate-800 p-1 border border-slate-100 dark:border-slate-700 group-hover:scale-105 transition-transform" />
                         <div className="flex-1 truncate">
@@ -217,7 +222,7 @@ const Navbar = ({ onOpenMobileMenu }) => {
                           <div
                             key={i}
                             onClick={() => handleSearchSubmit(null, item)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-900/20 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-medium cursor-pointer transition-all group"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-900/20 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-medium cursor-pointer transition-all group border border-slate-200/50 dark:border-slate-700/50"
                           >
                             <span>{item}</span>
                             <button
@@ -243,7 +248,7 @@ const Navbar = ({ onOpenMobileMenu }) => {
                         <div
                           key={prod._id || prod.id}
                           onClick={() => { setShowSearchDropdown(false); navigate(`/product/${prod._id || prod.id}`); }}
-                          className="flex items-center gap-3 p-2 hover:bg-slate-50 dark:hover:bg-slate-800/80 rounded-2xl cursor-pointer transition-all group border border-transparent hover:border-slate-100 dark:hover:border-slate-700"
+                          className="flex items-center gap-3 p-2 hover:bg-slate-50 dark:hover:bg-slate-800/80 rounded-2xl cursor-pointer transition-all group border border-transparent hover:border-slate-200/60 dark:hover:border-slate-700/60"
                         >
                           <img src={prod.images?.[0] || 'https://via.placeholder.com/40'} alt={prod.name} className="w-12 h-12 object-contain rounded-xl bg-slate-50 dark:bg-slate-800 p-1 border border-slate-100 dark:border-slate-700 group-hover:scale-105 transition-transform" />
                           <div className="flex-1 truncate">
@@ -267,12 +272,12 @@ const Navbar = ({ onOpenMobileMenu }) => {
           {/* Wishlist */}
           <Link
             to="/wishlist"
-            className="p-3 text-slate-800 dark:text-slate-200 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl relative transition-all"
+            className="p-3 text-slate-700 dark:text-slate-200 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl relative transition-all"
             title={t('wishlist')}
           >
             <Heart size={22} className={wishlistCount > 0 ? "fill-red-500 text-red-500" : ""} />
             {wishlistCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-5 h-5 bg-red-500 text-white font-bold text-[10px] rounded-full flex items-center justify-center animate-bounce shadow">
+              <span className="absolute top-1.5 right-1.5 w-5 h-5 bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold text-[10px] rounded-full flex items-center justify-center animate-bounce shadow">
                 {wishlistCount}
               </span>
             )}
@@ -282,12 +287,12 @@ const Navbar = ({ onOpenMobileMenu }) => {
           <div className="relative" ref={notifRef}>
             <button
               onClick={() => { setShowNotifDropdown(!showNotifDropdown); setShowUserDropdown(false); }}
-              className="p-3 text-slate-800 dark:text-slate-200 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-2xl relative transition-all"
+              className="p-3 text-slate-700 dark:text-slate-200 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-2xl relative transition-all"
               title="Thông báo"
             >
               <Bell size={22} />
               {unreadCount > 0 && (
-                <span className="absolute top-1.5 right-1.5 w-5 h-5 bg-amber-500 text-white font-bold text-[10px] rounded-full flex items-center justify-center shadow">
+                <span className="absolute top-1.5 right-1.5 w-5 h-5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-[10px] rounded-full flex items-center justify-center shadow">
                   {unreadCount}
                 </span>
               )}
@@ -295,7 +300,7 @@ const Navbar = ({ onOpenMobileMenu }) => {
 
             {/* Notification Dropdown */}
             {showNotifDropdown && (
-              <div className="absolute right-0 mt-3 w-80 sm:w-96 bg-white dark:bg-slate-900 rounded-3xl shadow-glass dark:shadow-glass-dark border border-slate-100 dark:border-slate-800 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150">
+              <div className="absolute right-0 mt-3 w-80 sm:w-96 bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl rounded-3xl shadow-premium dark:shadow-premium-dark border border-slate-200/80 dark:border-slate-800/80 overflow-hidden z-50 animate-fade-in">
                 <div className="flex items-center justify-between px-5 py-4 bg-slate-50 dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700/50">
                   <span className="font-extrabold text-sm text-slate-900 dark:text-white">Thông báo mới</span>
                   {unreadCount > 0 && (
@@ -338,13 +343,14 @@ const Navbar = ({ onOpenMobileMenu }) => {
 
           {/* Cart */}
           <Link
+            id="cart-nav-btn"
             to="/cart"
-            className="p-3 bg-primary-50/80 dark:bg-primary-900/20 text-primary-600 hover:bg-primary-100 dark:hover:bg-primary-900/40 rounded-2xl relative transition-all flex items-center gap-2.5 font-bold text-sm"
+            className="p-3 bg-gradient-to-r from-primary-600/10 to-indigo-600/10 dark:from-primary-500/20 dark:to-indigo-500/20 text-primary-600 dark:text-primary-400 hover:bg-primary-600 hover:text-white dark:hover:bg-primary-600 dark:hover:text-white rounded-2xl relative transition-all duration-200 flex items-center gap-2.5 font-bold text-sm border border-primary-500/20 group shadow-sm hover:shadow-primary-500/25"
           >
             <div className="relative">
-              <ShoppingCart size={22} />
+              <ShoppingCart size={22} className="transition-transform group-hover:scale-110" />
               {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 w-5 h-5 bg-primary text-white font-black text-[10px] rounded-full flex items-center justify-center shadow-md">
+                <span className="absolute -top-2 -right-2 w-5 h-5 bg-gradient-to-r from-accent-500 to-orange-500 text-white font-black text-[10px] rounded-full flex items-center justify-center shadow-md">
                   {cartCount}
                 </span>
               )}
@@ -372,7 +378,7 @@ const Navbar = ({ onOpenMobileMenu }) => {
 
               {/* User Dropdown */}
               {showUserDropdown && (
-                <div className="absolute right-0 mt-3 w-60 bg-white dark:bg-slate-900 rounded-3xl shadow-glass dark:shadow-glass-dark border border-slate-100 dark:border-slate-800 py-3 z-50 animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute right-0 mt-3 w-64 bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl rounded-3xl shadow-premium dark:shadow-premium-dark border border-slate-200/80 dark:border-slate-800/80 py-3 z-50 animate-fade-in">
                   <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800/50 mb-2">
                     <p className="text-xs text-slate-400 font-medium">{lang === 'vi' ? 'Xin chào,' : 'Hello,'}</p>
                     <p className="text-sm font-extrabold text-slate-900 dark:text-white truncate">{user?.name}</p>
@@ -422,10 +428,10 @@ const Navbar = ({ onOpenMobileMenu }) => {
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <Link to="/login" className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 font-bold text-sm text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all shadow-sm">
+              <Link to="/login" className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 font-bold text-sm text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all shadow-sm">
                 {t('login')}
               </Link>
-              <Link to="/register" className="px-4 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-bold text-sm shadow-soft hover:shadow-lg transition-all hidden sm:flex">
+              <Link to="/register" className="btn-primary text-sm hidden sm:flex">
                 {t('register')}
               </Link>
             </div>
