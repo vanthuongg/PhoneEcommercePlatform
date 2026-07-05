@@ -1,31 +1,74 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import React, { useState, useMemo } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { orderAPI } from '../../services/api';
 import Breadcrumb from '../../components/ui/Breadcrumb';
 import VoucherPickerModal from '../../components/ui/VoucherPickerModal';
-import { Package, ArrowLeft, Loader2, CheckCircle2, Home, FileText, ShieldCheck, Truck, Tag, Sparkles, CreditCard, DollarSign } from 'lucide-react';
+import { Package, ArrowLeft, Loader2, CheckCircle2, Home, FileText, ShieldCheck, Truck, Tag, Sparkles, CreditCard, DollarSign, Gift, Store, Check, X, Copy, Clock, Calendar, MapPin, Phone, User, ShoppingBag, ArrowRight, Shield, Award, Zap, ChevronRight, HelpCircle, HeartHandshake } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const formatPrice = (price) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price || 0);
 
 const Checkout = () => {
-  const { cart, clearCart } = useCart();
+  const {
+    cart,
+    clearCart,
+    appliedVouchers = { freeship: null, platform: null, shop: {} },
+    shippingFee = 0,
+    discountAmount = 0,
+    freeshipDiscount = 0,
+    platformDiscount = 0,
+    shopDiscount = 0,
+    totalDiscountAll = 0,
+    finalTotal = 0,
+    applyVoucherStack,
+    removeVoucher,
+  } = useCart();
+
   const { user } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [successOrder, setSuccessOrder] = useState(null);
+  const [copied, setCopied] = useState(false);
 
-  const [appliedVoucher, setAppliedVoucher] = useState(() =>
-    location.state?.appliedVoucher || null
-  );
+  const handleCopyOrderCode = () => {
+    if (!successOrder) return;
+    const code = successOrder.orderCode || successOrder._id?.slice(-6).toUpperCase();
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    toast.success('🎉 Đã sao chép mã đơn hàng!');
+    setTimeout(() => setCopied(false), 2000);
+  };
 
-  // Lấy danh sách brand từ cart để validate brand-specific vouchers
-  const cartBrands = [...new Set((cart.items || []).map(item => item.product?.brand).filter(Boolean))];
+  // Lấy danh sách thương hiệu từ cart
+  const cartBrands = useMemo(() => {
+    const brands = (cart.items || []).map(item => item.product?.brand).filter(Boolean);
+    return [...new Set(brands)];
+  }, [cart.items]);
+
+  const getBrandDiscount = (brandName, v) => {
+    if (!v) return 0;
+    if (v.discountAmount || v.discount) return v.discountAmount || v.discount;
+    const brandItems = (cart.items || []).filter(item => 
+      item.product?.brand?.toLowerCase() === brandName?.toLowerCase() || 
+      item.brand?.toLowerCase() === brandName?.toLowerCase()
+    );
+    const brandSubtotal = brandItems.length > 0
+      ? brandItems.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0)
+      : (cart.items || []).reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0);
+    
+    let disc = 0;
+    if (v.discountType === 'percentage') {
+      disc = Math.round((brandSubtotal * (v.discountValue || 0)) / 100);
+      if (v.maxDiscountAmount && disc > v.maxDiscountAmount) disc = v.maxDiscountAmount;
+    } else {
+      disc = Math.min(v.discountValue || 0, brandSubtotal);
+    }
+    return disc;
+  };
 
   const [form, setForm] = useState({
     name: user?.addresses?.[0]?.name || user?.name || '',
@@ -39,10 +82,13 @@ const Checkout = () => {
     note: '',
   });
 
-  const isAutoFreeship = cart.totalPrice >= 300000;
-  const rawShippingFee = isAutoFreeship ? 0 : 30000;
-  const discountAmount = appliedVoucher ? appliedVoucher.discount : 0;
-  const totalAmount = Math.max(0, cart.totalPrice + rawShippingFee - discountAmount);
+  const isFreeshipEligible = cart.totalPrice >= 300000;
+  const rawShippingFee = isFreeshipEligible ? 0 : 30000;
+
+  const hasAnyVoucher =
+    appliedVouchers?.freeship ||
+    appliedVouchers?.platform ||
+    Object.keys(appliedVouchers?.shop || {}).length > 0;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -56,6 +102,39 @@ const Checkout = () => {
     }
     setLoading(true);
     try {
+      // Build danh sách voucher đã chọn cho backend chuẩn Shopee
+      const vouchersList = [];
+      if (appliedVouchers.freeship) {
+        vouchersList.push({
+          code: appliedVouchers.freeship.code,
+          scope: 'platform_freeship',
+          discountAmount: freeshipDiscount || 30000,
+        });
+      }
+      if (appliedVouchers.platform) {
+        vouchersList.push({
+          code: appliedVouchers.platform.code,
+          scope: 'platform_discount',
+          discountAmount: platformDiscount,
+        });
+      }
+      Object.entries(appliedVouchers.shop || {}).forEach(([brand, v]) => {
+        if (v) {
+          vouchersList.push({
+            code: v.code,
+            scope: 'shop_discount',
+            discountAmount: getBrandDiscount(brand, v),
+            brand,
+          });
+        }
+      });
+
+      const fallbackCode =
+        appliedVouchers.platform?.code ||
+        appliedVouchers.freeship?.code ||
+        Object.values(appliedVouchers.shop || {})[0]?.code ||
+        '';
+
       const res = await orderAPI.create({
         shippingAddress: {
           name: form.name,
@@ -68,11 +147,13 @@ const Checkout = () => {
         },
         paymentMethod: form.paymentMethod,
         note: form.note,
-        voucherCode: appliedVoucher?.code || '',
+        voucherCode: fallbackCode,
+        appliedVouchers: vouchersList,
       });
+
       await clearCart();
-      localStorage.removeItem('appliedVoucher');
       setSuccessOrder(res.data);
+      toast.success('🎉 Đặt hàng thành công!');
     } catch (err) {
       toast.error(err.message || 'Lỗi đặt hàng');
     } finally {
@@ -81,120 +162,295 @@ const Checkout = () => {
   };
 
   if (successOrder) {
+    const orderCode = successOrder.orderCode || successOrder._id?.slice(-6).toUpperCase() || 'ORDER';
+    const itemsSubtotal = successOrder.itemsTotal || (successOrder.items || []).reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 1), 0);
+    const shippingFeeVal = successOrder.shippingFee || 0;
+    const totalDiscountVal = (successOrder.discount || 0) + (successOrder.freeshipDiscount || 0);
+
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 transition-colors relative overflow-hidden">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 py-6 sm:py-10 px-4 transition-colors relative overflow-hidden font-sans flex items-center justify-center">
         {/* Ambient background glow */}
-        <div className="absolute top-1/4 -left-32 w-96 h-96 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none animate-pulse-slow" />
-        <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-primary-500/15 rounded-full blur-3xl pointer-events-none animate-float-slow" />
+        <div className="absolute top-1/4 left-1/4 w-[350px] h-[350px] bg-emerald-500/10 dark:bg-emerald-500/15 rounded-full blur-[100px] pointer-events-none animate-pulse-slow" />
+        <div className="absolute bottom-1/4 right-1/4 w-[350px] h-[350px] bg-primary-500/10 dark:bg-primary-500/15 rounded-full blur-[100px] pointer-events-none animate-float-slow" />
 
-        <div className="max-w-3xl w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl rounded-[2.5rem] shadow-premium border border-slate-200/80 dark:border-slate-800/80 p-8 sm:p-12 text-center relative z-10 space-y-8 animate-scale-in">
-          {/* Top Success Badge */}
-          <div className="relative mx-auto w-24 h-24">
-            <div className="absolute inset-0 bg-emerald-400 dark:bg-emerald-500 rounded-full animate-ping opacity-30" />
-            <div className="relative w-24 h-24 bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 rounded-full flex items-center justify-center text-white shadow-2xl shadow-emerald-500/40 ring-8 ring-emerald-500/10 mx-auto animate-bounce-subtle">
-              <Sparkles className="absolute -top-1 -right-1 w-6 h-6 text-yellow-300 animate-spin-slow" />
-              <CheckCircle2 size={48} className="drop-shadow-md" />
-            </div>
-          </div>
-
-          {/* Heading */}
-          <div className="space-y-3 max-w-xl mx-auto">
-            <span className="px-4 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 text-xs font-black tracking-widest uppercase border border-emerald-200/60 dark:border-emerald-800/60 inline-block shadow-sm">
-              ⚡ Đơn Hàng Đã Xử Lý Thành Công
-            </span>
-            <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 dark:text-white">
-              Cảm Ơn Bạn Đã Đặt Hàng! 🎉
-            </h1>
-            <p className="text-slate-500 dark:text-slate-400 text-sm sm:text-base font-medium leading-relaxed">
-              Hệ thống đã ghi nhận đơn hàng của bạn. Chúng tôi đang khẩn trương kiểm tra chất lượng sản phẩm và chuẩn bị giao siêu tốc 2H đến tận tay bạn.
-            </p>
-          </div>
-
-          {/* Receipt / Order Ticket */}
-          <div className="bg-slate-50/90 dark:bg-slate-800/50 rounded-3xl p-6 sm:p-8 border border-slate-200/70 dark:border-slate-700/70 text-left space-y-6 shadow-inner relative overflow-hidden">
+        {/* Compact Main Container */}
+        <div className="w-full max-w-4xl mx-auto space-y-6 relative z-10">
+          
+          {/* Hero Celebration Card */}
+          <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800/80 shadow-premium text-center relative overflow-hidden animate-scale-in">
             <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-primary-600" />
             
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-slate-200/80 dark:border-slate-700/80">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Mã đơn hàng</span>
-                <span className="font-mono font-black text-xl text-primary-600 dark:text-primary-400 tracking-wider">
-                  #{successOrder.orderCode || successOrder._id?.slice(-6).toUpperCase()}
-                </span>
+            <div className="max-w-2xl mx-auto space-y-4">
+              {/* Icon */}
+              <div className="relative mx-auto w-16 h-16">
+                <div className="absolute inset-0 bg-emerald-400 dark:bg-emerald-500 rounded-full animate-ping opacity-25" />
+                <div className="relative w-16 h-16 bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 rounded-full flex items-center justify-center text-white shadow-xl shadow-emerald-500/30 ring-4 ring-emerald-500/10 mx-auto">
+                  <Sparkles className="absolute -top-1 -right-1 w-4 h-4 text-yellow-300 animate-spin-slow" />
+                  <CheckCircle2 size={32} className="drop-shadow-sm" />
+                </div>
               </div>
-              <div className="flex items-center gap-2 bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-4 py-2 rounded-2xl text-xs font-extrabold border border-emerald-500/20 self-start sm:self-auto">
-                <Truck size={16} className="animate-bounce-subtle" />
-                <span>Giao hàng hỏa tốc 2H</span>
-              </div>
-            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
+              {/* Title & Subtitle */}
               <div className="space-y-1.5">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Người nhận hàng</span>
-                <p className="font-extrabold text-slate-900 dark:text-white text-base">
-                  {successOrder.shippingAddress?.name}
-                </p>
-                <p className="font-medium text-slate-600 dark:text-slate-300">
-                  📞 {successOrder.shippingAddress?.phone}
-                </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
-                  📍 {[successOrder.shippingAddress?.street, successOrder.shippingAddress?.ward, successOrder.shippingAddress?.district, successOrder.shippingAddress?.city].filter(Boolean).join(', ')}
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 text-[11px] font-black tracking-wider uppercase border border-emerald-200/60 dark:border-emerald-800/60">
+                  <Zap size={12} className="fill-emerald-500" />
+                  <span>Đơn Hàng Đã Xử Lý Thành Công</span>
+                </div>
+                <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+                  Cảm Ơn Bạn Đã Đặt Hàng! 🎉
+                </h1>
+                <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium leading-relaxed max-w-lg mx-auto">
+                  Hệ thống TechPhone Store đã ghi nhận đơn hàng. Chúng tôi đang chuẩn bị giao siêu tốc 2H đến tận tay bạn.
                 </p>
               </div>
 
-              <div className="space-y-3">
-                <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1">Phương thức thanh toán</span>
-                  <div className="inline-flex items-center gap-2 bg-white dark:bg-slate-900 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-slate-800 dark:text-slate-200 shadow-2xs">
-                    <CreditCard size={16} className="text-primary-500" />
-                    <span>
-                      {successOrder.paymentMethod === 'cod' ? 'Tiền mặt khi nhận hàng (COD)' :
-                       successOrder.paymentMethod === 'bank_transfer' ? 'Chuyển khoản QR Bank' :
-                       successOrder.paymentMethod === 'momo' ? 'Ví điện tử MoMo' : 'Cổng thanh toán VNPay'}
-                    </span>
+              {/* Order Code & Delivery Badge */}
+              <div className="pt-1 flex flex-wrap items-center justify-center gap-2.5">
+                <div className="inline-flex items-center gap-2 bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 px-3.5 py-2 rounded-xl text-xs shadow-2xs">
+                  <span className="font-bold text-slate-400">Mã đơn:</span>
+                  <span className="font-mono font-black text-primary-600 dark:text-primary-400">
+                    #{orderCode}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleCopyOrderCode}
+                    className="p-1 rounded-lg bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-all active:scale-95 shadow-2xs ml-0.5"
+                    title="Sao chép"
+                  >
+                    {copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                  </button>
+                </div>
+                <div className="inline-flex items-center gap-1.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-3 py-2 rounded-xl text-xs font-extrabold">
+                  <Truck size={14} className="animate-bounce-subtle" />
+                  <span>Giao hỏa tốc 2H</span>
+                </div>
+              </div>
+
+              {/* Compact Timeline Stepper */}
+              <div className="pt-5 border-t border-slate-100 dark:border-slate-800/80">
+                <div className="grid grid-cols-4 gap-2">
+                  <div className="flex flex-col items-center text-center p-2 rounded-xl bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/20">
+                    <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center font-black text-[10px] mb-1">
+                      <Check size={12} />
+                    </div>
+                    <span className="text-[11px] font-extrabold text-slate-800 dark:text-slate-100">Đã đặt hàng</span>
+                    <span className="text-[9px] text-emerald-600 dark:text-emerald-400">Vừa xong</span>
+                  </div>
+                  <div className="flex flex-col items-center text-center p-2 rounded-xl bg-primary-500/5 dark:bg-primary-500/10 border border-primary-500/20 animate-pulse">
+                    <div className="w-6 h-6 rounded-full bg-primary-600 text-white flex items-center justify-center font-black text-[10px] mb-1">
+                      <Clock size={12} className="animate-spin-slow" />
+                    </div>
+                    <span className="text-[11px] font-extrabold text-slate-800 dark:text-slate-100">Đang đóng gói</span>
+                    <span className="text-[9px] text-primary-600 dark:text-primary-400">Xử lý</span>
+                  </div>
+                  <div className="flex flex-col items-center text-center p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/50 opacity-60">
+                    <div className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 flex items-center justify-center font-black text-[10px] mb-1">
+                      <Truck size={12} />
+                    </div>
+                    <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">Giao 2H</span>
+                    <span className="text-[9px] text-slate-400">Chờ giao</span>
+                  </div>
+                  <div className="flex flex-col items-center text-center p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/50 opacity-60">
+                    <div className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 flex items-center justify-center font-black text-[10px] mb-1">
+                      <Gift size={12} />
+                    </div>
+                    <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">Nhận hàng</span>
+                    <span className="text-[9px] text-slate-400">Hoàn tất</span>
                   </div>
                 </div>
-
-                <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1">Tổng tiền thanh toán</span>
-                  <span className="text-2xl font-black bg-gradient-to-r from-red-600 to-rose-500 dark:from-red-400 dark:to-rose-400 bg-clip-text text-transparent">
-                    {formatPrice(successOrder.totalAmount)}
-                  </span>
-                </div>
               </div>
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-            <Link
-              to="/profile?tab=orders"
-              className="py-4 px-6 rounded-2xl bg-gradient-to-r from-primary-600 via-indigo-600 to-primary-700 hover:from-primary-700 hover:to-indigo-700 text-white font-extrabold text-sm shadow-xl shadow-primary-500/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2.5"
-            >
-              <FileText size={18} /> Xem & Theo Dõi Đơn Hàng
-            </Link>
-            <Link
-              to="/shop"
-              className="py-4 px-6 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-extrabold text-sm border border-slate-200 dark:border-slate-700 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2.5"
-            >
-              <Sparkles size={18} className="text-amber-500" /> Tiếp Tục Khám Phá Siêu Phẩm
-            </Link>
+          {/* 2-Column Compact Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+            
+            {/* Left: Items & Info (7 cols) */}
+            <div className="md:col-span-7 space-y-6">
+              
+              {/* Order Items */}
+              <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center gap-2">
+                    <ShoppingBag size={18} className="text-primary-600 dark:text-primary-400" />
+                    <h2 className="text-sm font-black text-slate-900 dark:text-white">Sản Phẩm Đã Đặt ({successOrder.items?.length || 0})</h2>
+                  </div>
+                  <span className="text-[11px] font-extrabold text-slate-500">Bảo hành 24T</span>
+                </div>
+
+                <div className="divide-y divide-slate-100 dark:divide-slate-800/80">
+                  {(successOrder.items || []).map((item, idx) => (
+                    <div key={idx} className="py-3 first:pt-0 last:pb-0 flex items-center gap-3">
+                      <img
+                        src={item.image || 'https://via.placeholder.com/60'}
+                        alt={item.name}
+                        className="w-12 h-12 rounded-xl object-cover border border-slate-200/80 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800 shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm truncate">
+                          {item.name}
+                        </h3>
+                        <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                          {item.color && <span>{item.color}</span>}
+                          {item.color && item.size && <span>•</span>}
+                          {item.size && <span>{item.size}</span>}
+                          <span>•</span>
+                          <span className="font-bold">SL: x{item.quantity || 1}</span>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0 font-black text-slate-900 dark:text-white text-xs sm:text-sm">
+                        {formatPrice((item.price || 0) * (item.quantity || 1))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Shipping & Payment Info */}
+              <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-4">
+                <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
+                  <MapPin size={18} className="text-emerald-600 dark:text-emerald-400" />
+                  <h2 className="text-sm font-black text-slate-900 dark:text-white">Thông Tin Nhận Hàng & Thanh Toán</h2>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                  <div className="bg-slate-50/80 dark:bg-slate-800/40 p-3.5 rounded-xl border border-slate-200/60 dark:border-slate-700/60 space-y-2">
+                    <span className="font-extrabold uppercase tracking-wider text-slate-400 text-[10px] block">Người nhận</span>
+                    <p className="font-black text-slate-900 dark:text-white text-sm">
+                      {successOrder.shippingAddress?.name}
+                    </p>
+                    <p className="font-medium text-slate-600 dark:text-slate-300">
+                      📞 {successOrder.shippingAddress?.phone}
+                    </p>
+                    <p className="text-slate-500 dark:text-slate-400 line-clamp-2">
+                      📍 {[successOrder.shippingAddress?.street, successOrder.shippingAddress?.ward, successOrder.shippingAddress?.district, successOrder.shippingAddress?.city].filter(Boolean).join(', ')}
+                    </p>
+                  </div>
+
+                  <div className="bg-slate-50/80 dark:bg-slate-800/40 p-3.5 rounded-xl border border-slate-200/60 dark:border-slate-700/60 space-y-2.5 flex flex-col justify-between">
+                    <div>
+                      <span className="font-extrabold uppercase tracking-wider text-slate-400 text-[10px] block mb-1">Thanh toán</span>
+                      <div className="bg-white dark:bg-slate-900 px-3 py-2 rounded-lg border border-slate-200/80 dark:border-slate-700/80 font-bold text-slate-800 dark:text-slate-200 text-xs flex items-center gap-2">
+                        <CreditCard size={14} className="text-primary-500 shrink-0" />
+                        <span className="truncate">
+                          {successOrder.paymentMethod === 'cod' ? 'Tiền mặt (COD)' :
+                           successOrder.paymentMethod === 'bank_transfer' ? 'Chuyển khoản QR' :
+                           successOrder.paymentMethod === 'momo' ? 'Ví MoMo' : 'VNPay'}
+                        </span>
+                      </div>
+                    </div>
+                    {successOrder.note && (
+                      <p className="text-[11px] italic text-slate-500 bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200/50">
+                        "{successOrder.note}"
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Right: Summary & Actions (5 cols) */}
+            <div className="md:col-span-5 space-y-6">
+              
+              {/* Receipt Summary Card */}
+              <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800/80 shadow-premium relative overflow-hidden space-y-4">
+                <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-primary-600 via-indigo-600 to-emerald-500" />
+                
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                  <span className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
+                    <FileText size={16} className="text-amber-500" /> Tổng Kết Hóa Đơn
+                  </span>
+                  <span className="font-mono text-xs font-bold text-slate-400">#{orderCode}</span>
+                </div>
+
+                <div className="space-y-2.5 text-xs">
+                  <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                    <span>Tạm tính:</span>
+                    <span className="font-bold text-slate-900 dark:text-white">{formatPrice(itemsSubtotal)}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                    <span>Phí vận chuyển:</span>
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                      {shippingFeeVal === 0 ? 'Miễn phí (0đ)' : formatPrice(shippingFeeVal)}
+                    </span>
+                  </div>
+
+                  {successOrder.appliedVouchers && successOrder.appliedVouchers.length > 0 && (
+                    <div className="pt-1 space-y-1">
+                      {successOrder.appliedVouchers.map((v, idx) => (
+                        <div key={idx} className="flex justify-between items-center text-[11px] bg-primary-500/5 px-2.5 py-1.5 rounded-lg border border-primary-500/15">
+                          <span className="font-bold text-primary-600 dark:text-primary-400 flex items-center gap-1">
+                            <Gift size={12} /> {v.code}
+                          </span>
+                          <span className="font-bold text-emerald-600">-{formatPrice(v.discountAmount)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {totalDiscountVal > 0 && (
+                    <div className="flex justify-between items-center text-emerald-600 font-bold">
+                      <span>Giảm giá:</span>
+                      <span>-{formatPrice(totalDiscountVal)}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Dashed line */}
+                <div className="border-t border-dashed border-slate-200 dark:border-slate-800 my-2" />
+
+                {/* Total Amount */}
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200/60 dark:border-slate-700/60 text-center space-y-0.5">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+                    Tổng Thanh Toán
+                  </span>
+                  <div className="text-2xl font-black bg-gradient-to-r from-red-600 via-rose-500 to-amber-500 dark:from-red-400 dark:via-rose-400 dark:to-amber-400 bg-clip-text text-transparent">
+                    {formatPrice(successOrder.totalAmount)}
+                  </div>
+                  <p className="text-[10px] text-slate-400">(Đã bao gồm VAT & Miễn phí Giao 2H)</p>
+                </div>
+
+                {/* Actions */}
+                <div className="space-y-2.5 pt-1">
+                  <Link
+                    to="/profile?tab=orders"
+                    className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-700 hover:to-indigo-700 text-white font-extrabold text-xs shadow-lg shadow-primary-500/25 hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2"
+                  >
+                    <FileText size={16} /> 
+                    <span>Theo Dõi Đơn Hàng</span>
+                    <ArrowRight size={14} />
+                  </Link>
+                  <Link
+                    to="/shop"
+                    className="w-full py-3 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-extrabold text-xs border border-slate-200 dark:border-slate-700 transition-all hover:scale-[1.01] active:scale-95 flex items-center justify-center gap-2"
+                  >
+                    <Sparkles size={16} className="text-amber-500" />
+                    <span>Tiếp Tục Mua Sắm</span>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Trust Badges */}
+              <div className="grid grid-cols-3 gap-2">
+                <div className="bg-white/80 dark:bg-slate-900/80 p-3 rounded-xl border border-slate-200/70 dark:border-slate-800/70 text-center space-y-1">
+                  <ShieldCheck className="w-5 h-5 text-emerald-500 mx-auto" />
+                  <p className="text-[11px] font-extrabold text-slate-800 dark:text-slate-200">Bảo Hành 24T</p>
+                </div>
+                <div className="bg-white/80 dark:bg-slate-900/80 p-3 rounded-xl border border-slate-200/70 dark:border-slate-800/70 text-center space-y-1">
+                  <Truck className="w-5 h-5 text-primary-500 mx-auto" />
+                  <p className="text-[11px] font-extrabold text-slate-800 dark:text-slate-200">Giao Hỏa Tốc</p>
+                </div>
+                <div className="bg-white/80 dark:bg-slate-900/80 p-3 rounded-xl border border-slate-200/70 dark:border-slate-800/70 text-center space-y-1">
+                  <HeartHandshake className="w-5 h-5 text-rose-500 mx-auto" />
+                  <p className="text-[11px] font-extrabold text-slate-800 dark:text-slate-200">Đổi Trả 30N</p>
+                </div>
+              </div>
+
+            </div>
+
           </div>
 
-          {/* Trust Footer */}
-          <div className="grid grid-cols-3 gap-2 pt-4 border-t border-slate-100 dark:border-slate-800/80 text-center text-xs">
-            <div className="flex items-center justify-center gap-1.5 text-slate-600 dark:text-slate-400 font-bold">
-              <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
-              <span>Bảo hành 24T</span>
-            </div>
-            <div className="flex items-center justify-center gap-1.5 text-slate-600 dark:text-slate-400 font-bold">
-              <Truck className="w-4 h-4 text-primary-500 shrink-0" />
-              <span>Đổi trả 30 ngày</span>
-            </div>
-            <div className="flex items-center justify-center gap-1.5 text-slate-600 dark:text-slate-400 font-bold">
-              <Tag className="w-4 h-4 text-purple-500 shrink-0" />
-              <span>Hỗ trợ 24/7</span>
-            </div>
-          </div>
         </div>
       </div>
     );
@@ -388,39 +644,81 @@ const Checkout = () => {
                   ))}
                 </div>
 
-                {/* Voucher selection from Checkout */}
+                {/* Voucher selection from Checkout - 3 layers */}
                 <div className="pt-4 border-t border-gray-100 dark:border-gray-800 space-y-3">
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
-                      <Tag size={15} className="text-primary" /> Khuyến mãi đã chọn
+                      <Gift size={15} className="text-primary-600" /> TechPhone Voucher (3 Tầng)
                     </label>
                     <button
                       type="button"
                       onClick={() => setIsVoucherModalOpen(true)}
-                      className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
+                      className="text-xs font-bold text-primary-600 hover:underline flex items-center gap-1"
                     >
-                      Chọn voucher khác
+                      {hasAnyVoucher ? 'Thay đổi combo' : 'Chọn voucher'}
                     </button>
                   </div>
 
-                  {appliedVoucher ? (
-                    <div className="p-3 bg-primary/10 border border-primary/30 rounded-2xl text-xs font-bold text-primary flex items-center justify-between">
-                      <span>Mã {appliedVoucher.code} ({appliedVoucher.desc})</span>
-                      <div className="flex items-center gap-2">
-                        <span>-{formatPrice(appliedVoucher.discount)}</span>
-                        <button type="button" onClick={() => { setAppliedVoucher(null); localStorage.removeItem('appliedVoucher'); }} className="text-red-500 hover:underline text-[10px]">Bỏ</button>
-                      </div>
+                  {hasAnyVoucher ? (
+                    <div className="space-y-2 pt-1">
+                      {appliedVouchers?.freeship && (
+                        <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 rounded-2xl p-3 flex items-center justify-between text-xs font-bold">
+                          <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 min-w-0">
+                            <Truck size={15} className="text-emerald-600 shrink-0" />
+                            <span className="truncate">{appliedVouchers.freeship.code} (Freeship TechPhone)</span>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="text-emerald-600">-{formatPrice(freeshipDiscount || 30000)}</span>
+                            <button type="button" onClick={() => removeVoucher && removeVoucher('freeship')} className="text-gray-400 hover:text-red-500">
+                              <X size={14} />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {appliedVouchers?.platform && (
+                        <div className="bg-primary-50 dark:bg-primary-950/30 border border-primary-200 dark:border-primary-800/60 rounded-2xl p-3 flex items-center justify-between text-xs font-bold">
+                          <div className="flex items-center gap-2 text-primary-800 dark:text-primary-300 min-w-0">
+                            <Tag size={15} className="text-primary-600 shrink-0" />
+                            <span className="truncate">{appliedVouchers.platform.code} (Hệ Thống TechPhone)</span>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="text-primary-600">-{formatPrice(platformDiscount)}</span>
+                            <button type="button" onClick={() => removeVoucher && removeVoucher('platform')} className="text-gray-400 hover:text-red-500">
+                              <X size={14} />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {Object.entries(appliedVouchers?.shop || {}).map(([brand, v]) => {
+                        if (!v) return null;
+                        return (
+                          <div key={brand} className="bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/60 rounded-2xl p-3 flex items-center justify-between text-xs font-bold">
+                            <div className="flex items-center gap-2 text-indigo-800 dark:text-indigo-300 min-w-0">
+                              <Store size={15} className="text-indigo-600 shrink-0" />
+                              <span className="truncate">{v.code} ({brand})</span>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="text-indigo-600">-{formatPrice(getBrandDiscount(brand, v))}</span>
+                              <button type="button" onClick={() => removeVoucher && removeVoucher('shop', brand)} className="text-gray-400 hover:text-red-500">
+                                <X size={14} />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   ) : (
                     <button
                       type="button"
                       onClick={() => setIsVoucherModalOpen(true)}
-                      className="w-full py-3 px-4 rounded-xl border border-dashed border-primary/40 bg-blue-50/40 dark:bg-blue-900/10 hover:bg-blue-50 text-primary font-bold text-xs flex items-center justify-between transition-all"
+                      className="w-full py-3.5 px-4 rounded-2xl border-2 border-dashed border-primary/40 bg-primary-50/50 dark:bg-primary-900/10 hover:bg-primary-50 text-primary-600 dark:text-primary-400 font-black text-xs flex items-center justify-between transition-all"
                     >
                       <span className="flex items-center gap-1.5">
-                        <Tag size={15} /> Nhấn để chọn mã giảm giá từ kho
+                        <Gift size={16} className="text-primary-600" /> Chọn hoặc nhập mã combo 3 tầng
                       </span>
-                      <span className="bg-primary text-white px-2 py-0.5 rounded-lg text-[10px]">Chọn mã</span>
+                      <span className="bg-primary-600 text-white px-2.5 py-1 rounded-xl text-[10px]">Chọn mã</span>
                     </button>
                   )}
                 </div>
@@ -428,7 +726,7 @@ const Checkout = () => {
                 {/* Final Calculation */}
                 <div className="pt-4 border-t border-gray-100 dark:border-gray-800 space-y-3 text-sm">
                   <div className="flex justify-between text-gray-600 dark:text-gray-400">
-                    <span>Tạm tính:</span> <span className="font-bold text-gray-900 dark:text-white">{formatPrice(cart.totalPrice)}</span>
+                    <span>Tạm tính sản phẩm:</span> <span className="font-bold text-gray-900 dark:text-white">{formatPrice(cart.totalPrice)}</span>
                   </div>
                   <div className="flex justify-between text-gray-600 dark:text-gray-400">
                     <span>Phí vận chuyển:</span>
@@ -436,15 +734,25 @@ const Checkout = () => {
                       {rawShippingFee === 0 ? <span className="text-emerald-600 font-extrabold">0đ (Freeship)</span> : formatPrice(rawShippingFee)}
                     </span>
                   </div>
-                  {discountAmount > 0 && (
-                    <div className="flex justify-between text-emerald-600 font-bold">
-                      <span>Voucher ưu đãi:</span> <span>-{formatPrice(discountAmount)}</span>
+                  {freeshipDiscount > 0 && rawShippingFee > 0 && (
+                    <div className="flex justify-between text-emerald-600 font-bold text-xs">
+                      <span>• Freeship TechPhone:</span> <span>-{formatPrice(freeshipDiscount)}</span>
+                    </div>
+                  )}
+                  {platformDiscount > 0 && (
+                    <div className="flex justify-between text-primary-600 font-bold text-xs">
+                      <span>• Voucher Hệ Thống:</span> <span>-{formatPrice(platformDiscount)}</span>
+                    </div>
+                  )}
+                  {shopDiscount > 0 && (
+                    <div className="flex justify-between text-indigo-600 font-bold text-xs">
+                      <span>• Voucher Thương hiệu:</span> <span>-{formatPrice(shopDiscount)}</span>
                     </div>
                   )}
                   <div className="pt-3 border-t border-dashed border-gray-200 dark:border-gray-800 flex justify-between items-baseline">
                     <span className="font-bold text-base text-gray-900 dark:text-white">Tổng thanh toán:</span>
                     <span className="text-2xl sm:text-3xl font-black text-red-600 dark:text-red-400">
-                      {formatPrice(totalAmount)}
+                      {formatPrice(finalTotal)}
                     </span>
                   </div>
                 </div>
@@ -452,7 +760,7 @@ const Checkout = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-indigo-600 text-white font-black text-base shadow-xl shadow-blue-500/30 flex items-center justify-center gap-2.5 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50"
+                  className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-primary-600 to-teal-600 hover:from-primary-700 hover:to-teal-700 text-white font-black text-base shadow-xl shadow-primary/30 flex items-center justify-center gap-2.5 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50"
                 >
                   {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Package className="w-5 h-5" />}
                   <span>{loading ? 'Đang Xử Lý...' : 'Xác Nhận Hoàn Tất Đặt Hàng'}</span>
@@ -466,13 +774,11 @@ const Checkout = () => {
       <VoucherPickerModal
         isOpen={isVoucherModalOpen}
         onClose={() => setIsVoucherModalOpen(false)}
-        onSelect={(v) => {
-          setAppliedVoucher(v);
-          toast.success(`✅ Đã áp dụng mã "${v.code}" - Giảm ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v.discount)}`);
-        }}
-        currentVoucherCode={appliedVoucher?.code}
+        onSelectStack={(stack) => applyVoucherStack && applyVoucherStack(stack)}
+        appliedVouchers={appliedVouchers}
         orderTotal={cart.totalPrice}
         cartBrands={cartBrands}
+        paymentMethod={form.paymentMethod}
       />
     </div>
   );

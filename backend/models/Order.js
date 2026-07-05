@@ -52,6 +52,18 @@ const orderSchema = new mongoose.Schema(
     shippingFee: { type: Number, default: 30000 },
     discount: { type: Number, default: 0 },
     voucherCode: { type: String, default: '' },
+    freeshipDiscount: { type: Number, default: 0 },
+    platformDiscount: { type: Number, default: 0 },
+    shopDiscount: { type: Number, default: 0 },
+    appliedVouchers: [
+      {
+        code: { type: String, required: true },
+        scope: { type: String, default: 'platform_discount' },
+        title: { type: String, default: '' },
+        discountAmount: { type: Number, default: 0 },
+        brand: { type: String, default: '' },
+      },
+    ],
     totalAmount: { type: Number, required: true },
     note: { type: String, default: '' },
     timeline: [timelineStepSchema],

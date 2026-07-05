@@ -15,6 +15,31 @@ const getSettings = async (req, res) => {
   }
 };
 
+// @desc    Get public settings
+// @route   GET /api/settings/public
+// @access  Public
+const getPublicSettings = async (req, res) => {
+  try {
+    let settings = await Setting.findOne();
+    if (!settings) {
+      settings = await Setting.create({});
+    }
+    res.json({
+      success: true,
+      data: {
+        siteName: settings.siteName || 'ShopVN',
+        siteEmail: settings.siteEmail || 'admin@shopvn.com',
+        currency: settings.currency || 'VND',
+        timezone: settings.timezone || 'Asia/Ho_Chi_Minh',
+        maintenanceMode: settings.maintenanceMode || false,
+        allowRegistration: settings.allowRegistration !== undefined ? settings.allowRegistration : true,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // @desc    Update system settings
 // @route   PUT /api/settings
 // @access  Admin
@@ -32,4 +57,4 @@ const updateSettings = async (req, res) => {
   }
 };
 
-module.exports = { getSettings, updateSettings };
+module.exports = { getSettings, getPublicSettings, updateSettings };

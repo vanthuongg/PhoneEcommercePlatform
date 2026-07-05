@@ -32,7 +32,7 @@ const Banners = () => {
   const handleEdit = (banner) => {
     setEditId(banner._id);
     setFormData({ title: banner.title || '', link: banner.link || '', isActive: banner.isActive });
-    setImagePreview(banner.imageUrl);
+    setImagePreview(banner.imageUrl || banner.image || '');
     setImageFile(null);
     setShowForm(true);
   };
@@ -134,7 +134,7 @@ const Banners = () => {
               <div className="mt-1 flex items-center gap-4">
                 <div className="w-40 h-24 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 flex items-center justify-center">
                   {imagePreview ? (
-                    <img src={imagePreview.startsWith('http') ? imagePreview : `http://localhost:5000${imagePreview}`} alt="Preview" className="w-full h-full object-cover" />
+                    <img src={typeof imagePreview === 'string' && (imagePreview.startsWith('http') || imagePreview.startsWith('blob:')) ? imagePreview : `http://localhost:5000${imagePreview}`} alt="Preview" className="w-full h-full object-cover" />
                   ) : (
                     <ImageIcon className="w-8 h-8 text-gray-400" />
                   )}
@@ -184,11 +184,13 @@ const Banners = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {banners.map((banner) => (
+          {banners.map((banner) => {
+            const imgUrl = banner.imageUrl || banner.image || '';
+            return (
             <div key={banner._id} className="card overflow-hidden group">
               <div className="aspect-[21/9] relative bg-gray-100 dark:bg-gray-800">
                 <img 
-                  src={banner.imageUrl.startsWith('http') ? banner.imageUrl : `http://localhost:5000${banner.imageUrl}`} 
+                  src={imgUrl && imgUrl.startsWith('http') ? imgUrl : `http://localhost:5000${imgUrl}`} 
                   alt={banner.title} 
                   className={`w-full h-full object-cover transition-opacity ${!banner.isActive ? 'opacity-50 grayscale' : ''}`}
                 />
@@ -211,7 +213,8 @@ const Banners = () => {
                 <p className="text-sm text-gray-500 dark:text-gray-400 truncate mt-1">Link: {banner.link || 'Không có'}</p>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

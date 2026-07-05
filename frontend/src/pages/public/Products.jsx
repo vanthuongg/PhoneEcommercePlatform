@@ -25,9 +25,17 @@ const Shop = () => {
     color: searchParams.get('color') || '',
     rating: searchParams.get('rating') || '',
     inStock: searchParams.get('inStock') || '',
+    isSale: searchParams.get('isSale') || '',
     sort: searchParams.get('sort') || '-createdAt',
     page: Number(searchParams.get('page')) || 1,
   });
+
+  useEffect(() => {
+    const isSaleParam = searchParams.get('isSale') || '';
+    if (isSaleParam !== filters.isSale) {
+      setFilters(prev => ({ ...prev, isSale: isSaleParam, page: 1 }));
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     categoryAPI.getAll({ isActive: true }).then((res) => setCategories(res.data || [])).catch(() => { });
@@ -87,19 +95,19 @@ const Shop = () => {
   };
 
   const clearFilters = () => {
-    const reset = { search: '', category: '', brand: '', minPrice: '', maxPrice: '', ram: '', storage: '', color: '', rating: '', inStock: '', sort: '-createdAt', page: 1 };
+    const reset = { search: '', category: '', brand: '', minPrice: '', maxPrice: '', ram: '', storage: '', color: '', rating: '', inStock: '', isSale: '', sort: '-createdAt', page: 1 };
     setFilters(reset);
     setSearchParams({});
   };
 
-  const hasActiveFilters = filters.search || filters.category || filters.brand || filters.minPrice || filters.maxPrice || filters.ram || filters.storage || filters.color || filters.rating || filters.inStock;
+  const hasActiveFilters = filters.search || filters.category || filters.brand || filters.minPrice || filters.maxPrice || filters.ram || filters.storage || filters.color || filters.rating || filters.inStock || filters.isSale;
 
   const sortOptions = [
-    { value: '-createdAt', label: '⚡ Mới nhất' },
-    { value: '-sold', label: '🔥 Bán chạy' },
-    { value: 'price', label: '⬆️ Giá tăng dần' },
-    { value: '-price', label: '⬇️ Giá giảm dần' },
-    { value: '-rating', label: '⭐ Đánh giá cao nhất' },
+    { value: '-createdAt', label: 'Mới nhất' },
+    { value: '-sold', label: 'Bán chạy' },
+    { value: 'price', label: 'Giá tăng dần' },
+    { value: '-price', label: 'Giá giảm dần' },
+    { value: '-rating', label: 'Đánh giá cao nhất' },
   ];
 
   const pricePresets = [
@@ -121,25 +129,27 @@ const Shop = () => {
         <Breadcrumb items={[{ label: 'Trang chủ', link: '/' }, { label: 'Khám phá Điện thoại & Phụ kiện' }]} />
 
         {/* Header & Sort Bar */}
-        <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white">📱 Hệ Thống Điện Thoại Chính Hãng</h1>
-            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">Hiển thị <strong className="text-primary font-black">{products.length}</strong> sản phẩm đang kinh doanh</p>
+            <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white">
+              {filters.isSale === 'true' || filters.isSale === true ? 'Siêu Phẩm Flash Sale Giá Sốc' : 'Hệ Thống Điện Thoại Chính Hãng'}
+            </h1>
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">Hiển thị <strong className="text-primary font-semibold">{products.length}</strong> sản phẩm đang kinh doanh</p>
           </div>
 
           <div className="flex items-center gap-3">
             <button
               onClick={() => setFilterOpen(!filterOpen)}
-              className={`lg:hidden flex items-center gap-2 px-4 py-2.5 rounded-2xl border text-xs font-bold transition-all ${filterOpen || hasActiveFilters
+              className={`lg:hidden flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-semibold transition-all ${filterOpen || hasActiveFilters
                   ? 'border-primary bg-primary/10 text-primary shadow-sm'
                   : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'
                 }`}
             >
-              <Filter size={16} /> Bộ lọc {hasActiveFilters && <span className="w-2 h-2 rounded-full bg-primary animate-ping" />}
+              <Filter size={15} /> Bộ lọc {hasActiveFilters && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
             </button>
 
-            <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 px-4 py-2 rounded-2xl border border-gray-200 dark:border-gray-700">
-              <span className="text-xs font-bold text-gray-500 shrink-0">Sắp xếp:</span>
+            <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 px-4 py-2 rounded-full border border-gray-200 dark:border-gray-700">
+              <span className="text-xs font-semibold text-gray-500 shrink-0">Sắp xếp:</span>
               <select
                 value={filters.sort}
                 onChange={(e) => updateFilter('sort', e.target.value)}
@@ -162,6 +172,11 @@ const Shop = () => {
             {filters.search && (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-primary text-xs font-bold rounded-full border border-blue-200 dark:border-blue-800">
                 Từ khóa: "{filters.search}" <X size={13} className="cursor-pointer hover:scale-125" onClick={() => updateFilter('search', '')} />
+              </span>
+            )}
+            {(filters.isSale === 'true' || filters.isSale === true) && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-bold rounded-full border border-red-200 dark:border-red-800">
+                🔥 Đang giảm giá Flash Sale <X size={13} className="cursor-pointer hover:scale-125" onClick={() => updateFilter('isSale', '')} />
               </span>
             )}
             {filters.brand && (

@@ -159,6 +159,7 @@ const App = () => {
           <CustomerLayout><Profile /></CustomerLayout>
         </ProtectedRoute>
       } />
+      <Route path="/support" element={<Navigate to="/profile?tab=tickets" replace />} />
 
       {/* Admin routes */}
       <Route path="/admin" element={

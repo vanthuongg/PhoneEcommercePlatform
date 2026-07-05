@@ -12,7 +12,11 @@ export const CartProvider = ({ children }) => {
   const { user } = useAuth();
   const [cart, setCart] = useState({ items: [], totalPrice: 0 });
   const [loading, setLoading] = useState(false);
-  const [appliedVoucher, setAppliedVoucher] = useState(null);
+  const [appliedVouchers, setAppliedVouchers] = useState({
+    freeship: null,
+    platform: null,
+    shop: {},
+  });
   const [shippingFee, setShippingFee] = useState(30000); // Mặc định 30k
   const [flyingItem, setFlyingItem] = useState(null);
   const [floatingToast, setFloatingToast] = useState(null);
@@ -108,20 +112,48 @@ export const CartProvider = ({ children }) => {
     try {
       await cartAPI.clear();
       setCart({ items: [], totalPrice: 0 });
-      setAppliedVoucher(null);
+      setAppliedVouchers({ freeship: null, platform: null, shop: {} });
     } catch {}
   }, []);
 
-  const applyVoucher = useCallback((voucher) => {
-    setAppliedVoucher(voucher);
-    if (voucher?.discountType === 'freeship') {
-      setShippingFee(0);
-    }
+  // Áp dụng 1 voucher vào đúng tầng
+  const applyVoucher = useCallback((voucher, layer = '', brand = '') => {
+    setAppliedVouchers((prev) => {
+      const targetLayer = layer || (voucher?.discountType === 'freeship' || voucher?.scope === 'platform_freeship' ? 'freeship' : voucher?.scope === 'shop_discount' || voucher?.applicableTo === 'brand' ? 'shop' : 'platform');
+      if (targetLayer === 'freeship') {
+        return { ...prev, freeship: voucher };
+      }
+      if (targetLayer === 'shop') {
+        const targetBrand = brand || voucher?.applicableBrands?.[0] || 'Default';
+        return { ...prev, shop: { ...prev.shop, [targetBrand]: voucher } };
+      }
+      return { ...prev, platform: voucher };
+    });
   }, []);
 
-  const removeVoucher = useCallback(() => {
-    setAppliedVoucher(null);
-    setShippingFee(30000);
+  // Áp dụng combo nhiều tầng cùng lúc (từ TechPhone Voucher Picker Modal)
+  const applyVoucherStack = useCallback((stackObj) => {
+    setAppliedVouchers({
+      freeship: stackObj.freeship || null,
+      platform: stackObj.platform || null,
+      shop: stackObj.shop || {},
+    });
+  }, []);
+
+  const removeVoucher = useCallback((layer = 'all', brand = '') => {
+    setAppliedVouchers((prev) => {
+      if (layer === 'freeship') return { ...prev, freeship: null };
+      if (layer === 'platform') return { ...prev, platform: null };
+      if (layer === 'shop') {
+        if (brand) {
+          const nextShop = { ...prev.shop };
+          delete nextShop[brand];
+          return { ...prev, shop: nextShop };
+        }
+        return { ...prev, shop: {} };
+      }
+      return { freeship: null, platform: null, shop: {} };
+    });
   }, []);
 
   const cartCount = cart.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
@@ -129,20 +161,55 @@ export const CartProvider = ({ children }) => {
   // Tính subtotal
   const subtotal = cart.items?.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0) || 0;
   
-  // Tính số tiền giảm
-  let discountAmount = 0;
-  if (appliedVoucher) {
-    if (appliedVoucher.discountType === 'percentage') {
-      discountAmount = (subtotal * appliedVoucher.discountValue) / 100;
-      if (appliedVoucher.maxDiscountAmount && discountAmount > appliedVoucher.maxDiscountAmount) {
-        discountAmount = appliedVoucher.maxDiscountAmount;
+  // 1. Tính phí vận chuyển & giảm ship
+  const rawShippingFee = subtotal >= 300000 ? 0 : 30000;
+  let freeshipDiscount = 0;
+  if (appliedVouchers.freeship) {
+    freeshipDiscount = appliedVouchers.freeship.discountValue || 30000;
+  }
+  const calcShippingFee = Math.max(0, rawShippingFee - freeshipDiscount);
+
+  // 2. Tính giảm giá hệ thống (TechPhone Sàn Voucher)
+  let platformDiscount = 0;
+  if (appliedVouchers.platform) {
+    const v = appliedVouchers.platform;
+    if (v.discountType === 'percentage') {
+      platformDiscount = Math.round((subtotal * v.discountValue) / 100);
+      if (v.maxDiscountAmount && platformDiscount > v.maxDiscountAmount) {
+        platformDiscount = v.maxDiscountAmount;
       }
-    } else if (appliedVoucher.discountType === 'fixed') {
-      discountAmount = appliedVoucher.discountValue;
+    } else if (v.discountType === 'fixed') {
+      platformDiscount = Math.min(v.discountValue || 0, subtotal);
+    }
+  }
+
+  // 3. Tính giảm giá Shop / Brand
+  let shopDiscount = 0;
+  if (appliedVouchers.shop && Object.keys(appliedVouchers.shop).length > 0) {
+    for (const [brandName, v] of Object.entries(appliedVouchers.shop)) {
+      if (!v) continue;
+      const brandItems = (cart.items || []).filter(item => item.product?.brand?.toLowerCase() === brandName.toLowerCase() || item.brand?.toLowerCase() === brandName.toLowerCase());
+      const brandSubtotal = brandItems.length > 0
+        ? brandItems.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0)
+        : subtotal;
+      
+      let disc = 0;
+      if (v.discountType === 'percentage') {
+        disc = Math.round((brandSubtotal * v.discountValue) / 100);
+        if (v.maxDiscountAmount && disc > v.maxDiscountAmount) disc = v.maxDiscountAmount;
+      } else {
+        disc = Math.min(v.discountValue || 0, brandSubtotal);
+      }
+      shopDiscount += disc;
     }
   }
   
-  const finalTotal = Math.max(0, subtotal - discountAmount + shippingFee);
+  const discountAmount = platformDiscount + shopDiscount;
+  const totalDiscountAll = freeshipDiscount + discountAmount;
+  const finalTotal = Math.max(0, subtotal - discountAmount + calcShippingFee);
+
+  // Backward compatibility: appliedVoucher đơn lẻ
+  const appliedVoucher = appliedVouchers.platform || appliedVouchers.freeship || Object.values(appliedVouchers.shop)[0] || null;
 
   return (
     <CartContext.Provider value={{
@@ -151,8 +218,13 @@ export const CartProvider = ({ children }) => {
       cartCount,
       subtotal,
       discountAmount,
-      shippingFee,
+      freeshipDiscount,
+      platformDiscount,
+      shopDiscount,
+      totalDiscountAll,
+      shippingFee: calcShippingFee,
       finalTotal,
+      appliedVouchers,
       appliedVoucher,
       addToCart,
       updateQuantity,
@@ -160,6 +232,7 @@ export const CartProvider = ({ children }) => {
       clearCart,
       fetchCart,
       applyVoucher,
+      applyVoucherStack,
       removeVoucher,
       triggerFlyingEffect
     }}>

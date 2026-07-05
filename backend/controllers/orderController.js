@@ -4,6 +4,7 @@ const Product = require('../models/Product');
 const Voucher = require('../models/Voucher');
 const Notification = require('../models/Notification');
 const User = require('../models/User');
+const Setting = require('../models/Setting');
 const emailService = require('../services/emailService');
 const { createAuditLog } = require('./auditController');
 const mongoose = require('mongoose');
@@ -37,7 +38,10 @@ const createOrder = async (req, res) => {
   }
 
   try {
-    const { shippingAddress, paymentMethod, note, voucherCode } = req.body;
+    const { shippingAddress = {}, paymentMethod, note, voucherCode } = req.body;
+    if (!shippingAddress.email && req.user && req.user.email) {
+      shippingAddress.email = req.user.email;
+    }
 
     const cart = await Cart.findOne({ user: req.user._id })
       .populate('items.product')
@@ -70,23 +74,72 @@ const createOrder = async (req, res) => {
     const itemsTotal = cart.totalPrice;
     let shippingFee = itemsTotal >= 300000 ? 0 : 30000;
     let discount = 0;
-    let appliedVoucher = null;
+    let freeshipDiscount = 0;
+    let platformDiscount = 0;
+    let shopDiscount = 0;
+    let finalAppliedVouchers = [];
+    let voucherCodesList = [];
 
-    if (voucherCode) {
-      appliedVoucher = await Voucher.findOne({ code: voucherCode.toUpperCase(), isActive: true })
+    // Hỗ trợ combo voucher chuẩn hệ thống TechPhone Store (stacking)
+    const vouchersToProcess = req.body.appliedVouchers || [];
+    if (vouchersToProcess.length > 0) {
+      for (const item of vouchersToProcess) {
+        if (!item.code) continue;
+        const v = await Voucher.findOne({ code: item.code.toUpperCase(), isActive: true })
+          .session(isTxActive ? session : null);
+        if (v) {
+          const disc = Number(item.discountAmount) || 0;
+          if (item.scope === 'platform_freeship' || v.discountType === 'freeship' || v.tag === 'shipping') {
+            freeshipDiscount += disc || shippingFee;
+            shippingFee = Math.max(0, shippingFee - (disc || shippingFee));
+          } else if (item.scope === 'shop_discount' || v.applicableTo === 'brand' || v.tag === 'brand') {
+            shopDiscount += disc;
+            discount += disc;
+          } else {
+            platformDiscount += disc;
+            discount += disc;
+          }
+          finalAppliedVouchers.push({
+            code: v.code,
+            scope: item.scope || v.scope || 'platform_discount',
+            title: v.title,
+            discountAmount: disc,
+            brand: item.brand || '',
+          });
+          voucherCodesList.push(v.code);
+          // Tăng lượt sử dụng
+          v.usedCount = (v.usedCount || 0) + 1;
+          await v.save({ session: isTxActive ? session : undefined });
+        }
+      }
+    } else if (voucherCode) {
+      // Backward compatibility cho 1 mã cũ
+      const appliedVoucher = await Voucher.findOne({ code: voucherCode.toUpperCase(), isActive: true })
         .session(isTxActive ? session : null);
       if (appliedVoucher) {
         if (appliedVoucher.discountType === 'freeship') {
+          freeshipDiscount = shippingFee;
           shippingFee = 0;
         } else if (appliedVoucher.discountType === 'percentage') {
           discount = Math.round((itemsTotal * appliedVoucher.discountValue) / 100);
           if (appliedVoucher.maxDiscountAmount && discount > appliedVoucher.maxDiscountAmount) {
             discount = appliedVoucher.maxDiscountAmount;
           }
+          platformDiscount = discount;
         } else if (appliedVoucher.discountType === 'fixed') {
           discount = appliedVoucher.discountValue;
+          platformDiscount = discount;
         }
-        // Do not update usedCount here yet
+        finalAppliedVouchers.push({
+          code: appliedVoucher.code,
+          scope: appliedVoucher.scope || 'platform_discount',
+          title: appliedVoucher.title,
+          discountAmount: discount || freeshipDiscount,
+          brand: '',
+        });
+        voucherCodesList.push(appliedVoucher.code);
+        appliedVoucher.usedCount = (appliedVoucher.usedCount || 0) + 1;
+        await appliedVoucher.save({ session: isTxActive ? session : undefined });
       }
     }
 
@@ -100,7 +153,11 @@ const createOrder = async (req, res) => {
       itemsTotal,
       shippingFee,
       discount,
-      voucherCode: appliedVoucher ? appliedVoucher.code : '',
+      freeshipDiscount,
+      platformDiscount,
+      shopDiscount,
+      appliedVouchers: finalAppliedVouchers,
+      voucherCode: voucherCodesList.join(', '),
       totalAmount,
       note,
       timeline: [
@@ -114,15 +171,14 @@ const createOrder = async (req, res) => {
       ],
     }], { session: isTxActive ? session : undefined });
 
-    if (appliedVoucher) {
-      appliedVoucher.usedCount = (appliedVoucher.usedCount || 0) + 1;
-      await appliedVoucher.save({ session: isTxActive ? session : undefined });
-    }
+    const settings = (await Setting.findOne().session(isTxActive ? session : null)) || {};
+    const lowStockThreshold = settings.lowStockThreshold || 10;
 
     for (const item of cart.items) {
       const productToUpdate = await Product.findById(item.product._id)
         .session(isTxActive ? session : null);
       if (productToUpdate) {
+        let currentStock = 0;
         if (productToUpdate.variants && productToUpdate.variants.length > 0) {
           const matchingVariant = productToUpdate.variants.find(
             v => (v.storage === item.size || v.name === item.size) && v.color === item.color
@@ -133,11 +189,24 @@ const createOrder = async (req, res) => {
             }
             matchingVariant.stock -= item.quantity;
           }
+          currentStock = productToUpdate.variants.reduce((sum, v) => sum + Number(v.stock || 0), 0);
+          productToUpdate.stock = currentStock;
         } else {
           productToUpdate.stock -= item.quantity;
+          currentStock = productToUpdate.stock;
         }
         productToUpdate.sold = (productToUpdate.sold || 0) + item.quantity;
         await productToUpdate.save({ validateBeforeSave: false, session: isTxActive ? session : undefined });
+
+        if (settings.lowStockNotify !== false && currentStock <= lowStockThreshold) {
+          Notification.create({
+            role: 'admin',
+            title: `⚠️ Cảnh báo tồn kho thấp: ${productToUpdate.name}`,
+            message: `Sản phẩm "${productToUpdate.name}" chỉ còn ${currentStock} sản phẩm trong kho (Ngưỡng: ${lowStockThreshold}).`,
+            type: 'system',
+            link: `/admin/inventory`,
+          }).catch(console.error);
+        }
       }
     }
 
@@ -170,14 +239,18 @@ const createOrder = async (req, res) => {
       session.endSession();
     }
 
-    emailService.sendOrderConfirmationEmail(req.user, order).catch(console.error);
-    Notification.create({
-      role: 'admin',
-      title: `🛍️ Đơn hàng mới #${order.orderCode}`,
-      message: `Khách hàng ${req.user.name} vừa đặt đơn hàng trị giá ${totalAmount.toLocaleString()}đ`,
-      type: 'order',
-      link: `/admin/orders`,
-    }).catch(console.error);
+    if (settings.orderConfirmEmail !== false) {
+      emailService.sendOrderConfirmationEmail(req.user, order).catch(console.error);
+    }
+    if (settings.newOrderNotify !== false) {
+      Notification.create({
+        role: 'admin',
+        title: `🛍️ Đơn hàng mới #${order.orderCode}`,
+        message: `Khách hàng ${req.user.name} vừa đặt đơn hàng trị giá ${totalAmount.toLocaleString()}đ`,
+        type: 'order',
+        link: `/admin/orders`,
+      }).catch(console.error);
+    }
 
     // Tạo thông báo cho Khách hàng
     Notification.create({
@@ -204,12 +277,17 @@ const createOrder = async (req, res) => {
 // @access  Private
 const getOrders = async (req, res) => {
   try {
-    const { page = 1, limit = 10, status, paymentStatus } = req.query;
+    const { page = 1, limit = 10, status, paymentStatus, search } = req.query;
     const query = {};
 
     if (req.user.role === 'customer') query.user = req.user._id;
     if (status) query.orderStatus = status;
     if (paymentStatus) query.paymentStatus = paymentStatus;
+
+    // Hỗ trợ search theo orderCode
+    if (search) {
+      query.orderCode = { $regex: search, $options: 'i' };
+    }
 
     const total = await Order.countDocuments(query);
     const orders = await Order.find(query)
@@ -291,8 +369,12 @@ const updateOrderStatus = async (req, res) => {
         }
       }
 
-      if (order.voucherCode) {
-        const voucher = await Voucher.findOne({ code: order.voucherCode });
+      const codesToRestore = order.appliedVouchers && order.appliedVouchers.length > 0
+        ? order.appliedVouchers.map(v => v.code)
+        : (order.voucherCode ? order.voucherCode.split(',').map(c => c.trim()).filter(Boolean) : []);
+      
+      for (const code of codesToRestore) {
+        const voucher = await Voucher.findOne({ code: code.toUpperCase() });
         if (voucher && voucher.usedCount > 0) {
           voucher.usedCount -= 1;
           await voucher.save({ validateBeforeSave: false });
@@ -324,6 +406,19 @@ const updateOrderStatus = async (req, res) => {
       type: 'order',
       link: `/orders/${order._id}`,
     });
+
+    if (status === 'cancelled') {
+      const settings = await Setting.findOne() || {};
+      if (settings.orderCancelNotify !== false) {
+        Notification.create({
+          role: 'admin',
+          title: `🚫 Đơn hàng bị hủy #${order.orderCode}`,
+          message: `Đơn hàng #${order.orderCode} vừa chuyển sang trạng thái đã hủy.`,
+          type: 'order',
+          link: `/admin/orders`,
+        }).catch(console.error);
+      }
+    }
 
     // Ghi Audit Log
     await createAuditLog({
@@ -390,7 +485,11 @@ const cancelOrder = async (req, res) => {
     const order = await Order.findById(req.params.id);
 
     if (!order) return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng' });
-    if (order.user.toString() !== req.user._id.toString()) {
+    
+    // Admin, manager, staff có thể hủy bất kỳ đơn hàng nào
+    // Customer chỉ có thể hủy đơn của chính mình
+    const isPrivilegedRole = ['admin', 'manager', 'staff'].includes(req.user.role);
+    if (!isPrivilegedRole && order.user.toString() !== req.user._id.toString()) {
       return res.status(403).json({ success: false, message: 'Không có quyền hủy đơn hàng này' });
     }
     if (!['pending', 'confirmed'].includes(order.orderStatus)) {
@@ -426,8 +525,12 @@ const cancelOrder = async (req, res) => {
       }
     }
 
-    if (order.voucherCode) {
-      const voucher = await Voucher.findOne({ code: order.voucherCode });
+    const codesToRestore = order.appliedVouchers && order.appliedVouchers.length > 0
+      ? order.appliedVouchers.map(v => v.code)
+      : (order.voucherCode ? order.voucherCode.split(',').map(c => c.trim()).filter(Boolean) : []);
+    
+    for (const code of codesToRestore) {
+      const voucher = await Voucher.findOne({ code: code.toUpperCase() });
       if (voucher && voucher.usedCount > 0) {
         voucher.usedCount -= 1;
         await voucher.save({ validateBeforeSave: false });
@@ -435,6 +538,26 @@ const cancelOrder = async (req, res) => {
     }
 
     await order.save();
+
+    const settings = await Setting.findOne() || {};
+    if (settings.orderCancelNotify !== false) {
+      Notification.create({
+        role: 'admin',
+        title: `🚫 Khách hàng hủy đơn #${order.orderCode}`,
+        message: `Khách hàng ${req.user.name} vừa hủy đơn hàng #${order.orderCode}. Lý do: ${cancelReason || 'Không có'}`,
+        type: 'order',
+        link: `/admin/orders`,
+      }).catch(console.error);
+    }
+
+    Notification.create({
+      user: order.user._id || order.user,
+      title: `🚫 Đã hủy đơn hàng #${order.orderCode}`,
+      message: `Đơn hàng của bạn đã được hủy thành công.`,
+      type: 'order',
+      link: `/profile?tab=orders`,
+    }).catch(console.error);
+
     res.json({ success: true, message: 'Hủy đơn hàng thành công', data: order });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

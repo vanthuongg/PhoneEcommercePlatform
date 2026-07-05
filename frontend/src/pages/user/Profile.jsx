@@ -69,6 +69,9 @@ const Profile = () => {
 
       const res = await userAPI.updateProfile(formData);
       updateUser(res.data);
+      toast.success('Cập nhật thông tin thành công! 🎉');
+      setAvatarFile(null);
+      setAvatarPreview(null);
     } catch (err) {
       toast.error(err.message || "Cập nhật thất bại");
     } finally {
@@ -95,6 +98,7 @@ const Profile = () => {
         newPassword: passwordForm.newPassword,
       });
       setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      toast.success('Đổi mật khẩu thành công! 🔐');
     } catch (err) {
       toast.error(err.message || "Đổi mật khẩu thất bại");
     } finally {
@@ -207,9 +211,9 @@ const Profile = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start w-full min-w-0">
           {/* Sidebar Menu Tabs */}
-          <div className="lg:col-span-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-3xl p-4 border border-slate-200/80 dark:border-slate-800/80 shadow-premium dark:shadow-premium-dark space-y-1.5 sticky top-24 transition-all">
+          <div className="lg:col-span-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-3xl p-3.5 border border-slate-200/80 dark:border-slate-800/80 shadow-premium dark:shadow-premium-dark space-y-1.5 sticky top-24 transition-all min-w-0 w-full">
             {tabs.map(({ key, label, icon: Icon, count }, idx) => (
               <button
                 key={key}
@@ -248,7 +252,7 @@ const Profile = () => {
           </div>
 
           {/* Main Content Area */}
-          <div className="lg:col-span-8 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800/80 shadow-premium dark:shadow-premium-dark min-h-[500px] transition-all animate-fade-in-up">
+          <div className={`lg:col-span-9 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-premium dark:shadow-premium-dark min-h-[500px] transition-all animate-fade-in-up min-w-0 w-full overflow-hidden ${activeTab === 'tickets' ? 'p-1.5 sm:p-2.5' : 'p-6 sm:p-8'}`}>
             {activeTab === "info" && (
               <form onSubmit={handleUpdateProfile} className="space-y-6 animate-fade-in">
                 <div className="pb-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between">

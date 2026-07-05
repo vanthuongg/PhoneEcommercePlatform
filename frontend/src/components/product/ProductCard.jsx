@@ -80,70 +80,66 @@ const ProductCard = ({ product }) => {
   return (
     <Link
       to={`/product/${product._id || product.id}`}
-      className="group flex flex-col h-full bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 overflow-hidden transition-all duration-300 hover:shadow-premium-hover dark:hover:shadow-premium-hover-dark hover:-translate-y-2 hover:border-primary-500/60 dark:hover:border-primary-500/60 relative z-10"
+      className="group flex flex-col h-full bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 overflow-hidden transition-all duration-250 hover:shadow-premium hover:-translate-y-1 hover:border-primary-500/30 dark:hover:border-primary-500/30 relative z-10"
     >
-      {/* Shimmer sweep effect on hover */}
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 dark:via-white/5 to-transparent -translate-x-full group-hover:animate-shimmer pointer-events-none z-20" />
-
       {/* Badges góc trên trái */}
-      <div className="absolute top-3.5 left-3.5 z-20 flex flex-col gap-1.5 items-start">
+      <div className="absolute top-3 left-3 z-20 flex flex-col gap-1 items-start">
         {discountPercent > 0 && (
-          <span className="bg-gradient-to-r from-red-600 via-accent-600 to-orange-500 text-white font-black text-[10px] px-2.5 py-1 rounded-xl shadow-lg uppercase tracking-wider flex items-center gap-1 animate-pulse">
-            <Zap size={11} className="fill-white animate-bounce-subtle" /> -{discountPercent}%
+          <span className="bg-red-600 text-white font-semibold text-[9px] px-2 py-0.5 rounded-md shadow-sm uppercase tracking-wider flex items-center gap-1">
+            <Zap size={10} className="fill-white" /> -{discountPercent}%
           </span>
         )}
         {isNew && (
-          <span className="bg-gradient-to-r from-primary-600 via-indigo-600 to-purple-600 text-white font-extrabold text-[10px] px-2.5 py-1 rounded-xl shadow-lg uppercase tracking-wider flex items-center gap-1">
-            <Sparkles size={11} className="animate-spin-slow" /> Mới
+          <span className="bg-primary-600 text-white font-semibold text-[9px] px-2 py-0.5 rounded-md shadow-sm uppercase tracking-wider flex items-center gap-1">
+            <Sparkles size={10} /> Mới
           </span>
         )}
         {!isNew && product.isFeatured && (
-          <span className="bg-gradient-to-r from-amber-500 to-orange-500 text-white font-extrabold text-[10px] px-2.5 py-1 rounded-xl shadow-lg uppercase tracking-wider">
+          <span className="bg-accent-600 text-white font-semibold text-[9px] px-2 py-0.5 rounded-md shadow-sm uppercase tracking-wider">
             Nổi bật
           </span>
         )}
       </div>
 
       {/* Action floating bar bên phải */}
-      <div className="absolute top-3.5 right-3.5 z-20 flex flex-col gap-2">
+      <div className="absolute top-3 right-3 z-20 flex flex-col gap-1.5">
         <button
           type="button"
           onClick={handleToggleWishlist}
-          className={`w-9 h-9 rounded-2xl flex items-center justify-center transition-all duration-300 ${
+          className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-250 ${
             isWishlisted
-              ? 'bg-red-500 text-white scale-110 shadow-lg shadow-red-500/40 animate-bounce-subtle'
-              : 'bg-white/90 dark:bg-slate-800/90 backdrop-blur-md text-slate-400 hover:text-red-500 hover:scale-110 shadow-sm border border-slate-200/60 dark:border-slate-700/60'
+              ? 'bg-red-500 text-white scale-105 shadow-sm'
+              : 'bg-white/90 dark:bg-slate-850/90 backdrop-blur-md text-slate-400 hover:text-red-500 shadow-xs border border-slate-200/40 dark:border-slate-800/40'
           }`}
           title="Yêu thích"
         >
-          <Heart size={17} className={isWishlisted ? 'fill-white' : 'group-hover:scale-110 transition-transform'} />
+          <Heart size={15} className={isWishlisted ? 'fill-white' : ''} />
         </button>
 
         <button
           type="button"
           onClick={handleToggleCompare}
-          className={`w-9 h-9 rounded-2xl flex items-center justify-center transition-all duration-300 ${
+          className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-250 ${
             isCompared
-              ? 'bg-primary-600 text-white scale-110 shadow-lg shadow-primary-500/40'
-              : 'bg-white/90 dark:bg-slate-800/90 backdrop-blur-md text-slate-400 hover:text-primary-600 hover:scale-110 shadow-sm border border-slate-200/60 dark:border-slate-700/60 opacity-0 group-hover:opacity-100 translate-x-3 group-hover:translate-x-0'
+              ? 'bg-primary-600 text-white scale-105 shadow-sm'
+              : 'bg-white/90 dark:bg-slate-850/90 backdrop-blur-md text-slate-400 hover:text-primary-600 shadow-xs border border-slate-200/40 dark:border-slate-800/40 opacity-0 group-hover:opacity-100'
           }`}
           title={isCompared ? "Bỏ so sánh" : "Thêm vào so sánh"}
         >
-          {isCompared ? <Check size={17} className="stroke-[3]" /> : <Scale size={17} />}
+          {isCompared ? <Check size={15} className="stroke-[3]" /> : <Scale size={15} />}
         </button>
       </div>
 
       {/* Image Container */}
-      <div className="relative aspect-square w-full overflow-hidden bg-gradient-to-b from-slate-50/80 via-slate-50/40 to-white dark:from-slate-800/40 dark:via-slate-800/20 dark:to-slate-900 p-7 flex items-center justify-center border-b border-slate-100 dark:border-slate-800/60">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+      <div className="relative aspect-square w-full overflow-hidden bg-slate-50/50 dark:bg-slate-900/50 p-6 flex items-center justify-center border-b border-slate-200/40 dark:border-slate-800/40">
         <img
           src={product.images?.[0] || 'https://via.placeholder.com/400?text=Phone'}
           alt={product.name}
-          className="w-full h-full object-contain object-center group-hover:scale-115 transition-all duration-500 drop-shadow-md group-hover:drop-shadow-xl"
+          className="w-full h-full object-contain object-center group-hover:scale-102 transition-all duration-500 drop-shadow-sm"
         />
         {product.stock <= 0 && (
-          <div className="absolute inset-0 bg-slate-950/75 backdrop-blur-md flex items-center justify-center z-20 animate-fade-in">
-            <span className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-black text-xs px-5 py-2.5 rounded-2xl uppercase tracking-widest shadow-2xl border border-slate-200 dark:border-slate-700">
+          <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center z-20">
+            <span className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-semibold text-[10px] px-4 py-2 rounded-lg uppercase tracking-wider border border-slate-200 dark:border-slate-700">
               Tạm hết hàng
             </span>
           </div>
@@ -151,37 +147,37 @@ const ProductCard = ({ product }) => {
       </div>
 
       {/* Info Container */}
-      <div className="p-4 sm:p-5 flex flex-col flex-1 justify-between gap-3 bg-white dark:bg-slate-900 transition-colors">
+      <div className="p-4 flex flex-col flex-1 justify-between gap-3 bg-white dark:bg-slate-900 transition-colors">
         <div>
-          <div className="text-[10px] font-black text-primary-600 dark:text-primary-400 uppercase tracking-[0.2em] truncate mb-1.5 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary-500 inline-block" />
+          <div className="text-[9px] font-semibold text-primary-600 dark:text-primary-400 uppercase tracking-[0.15em] truncate mb-1 flex items-center gap-1">
+            <span className="w-1 h-1 rounded-full bg-primary-500 inline-block" />
             {product.brand || 'Điện thoại'}
           </div>
-          <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors leading-snug">
+          <h3 className="font-semibold text-sm text-slate-900 dark:text-white line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors leading-snug">
             {product.name}
           </h3>
         </div>
 
-        <div className="mt-auto pt-2 space-y-3.5">
+        <div className="mt-auto pt-2 space-y-3">
           {/* Rating & Sold */}
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-            <div className="flex items-center gap-1">
-              <RatingStars rating={product.rating || 5} size={13} />
-              <span className="font-bold text-slate-700 dark:text-slate-300 ml-0.5">({product.rating || 5.0})</span>
+          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-405">
+            <div className="flex items-center gap-0.5">
+              <RatingStars rating={product.rating || 5} size={11} />
+              <span className="font-semibold text-slate-700 dark:text-slate-300 ml-1">({product.rating || 5.0})</span>
             </div>
-            <span className="text-[11px] font-bold bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 px-2.5 py-0.5 rounded-lg shadow-2xs">
+            <span className="text-[10px] font-semibold bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-305 px-2 py-0.5 rounded">
               Đã bán {product.sold > 1000 ? `${(product.sold / 1000).toFixed(1)}k` : (product.sold || 12)}
             </span>
           </div>
 
           {/* Price */}
-          <div className="flex items-baseline justify-between pt-2 border-t border-slate-100 dark:border-slate-800/60">
+          <div className="flex items-baseline justify-between pt-2 border-t border-slate-150 dark:border-slate-800/40">
             <div className="flex flex-col">
-              <span className="font-black text-lg sm:text-xl text-red-600 dark:text-red-400 leading-none tracking-tight">
+              <span className="font-mono font-semibold text-base sm:text-lg text-accent-600 dark:text-accent-500 leading-none">
                 {formatPrice(price)}
               </span>
               {oldPrice > price && (
-                <span className="text-xs text-slate-400 line-through mt-1 font-medium">
+                <span className="text-xs font-mono text-slate-400 line-through mt-1">
                   {formatPrice(oldPrice)}
                 </span>
               )}
@@ -193,21 +189,21 @@ const ProductCard = ({ product }) => {
             type="button"
             onClick={handleAddToCart}
             disabled={product.stock <= 0}
-            className={`w-full py-2.5 rounded-xl text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 transition-all duration-300 shadow-md active:scale-95 ${
+            className={`w-full py-2 rounded-full text-xs font-semibold flex items-center justify-center gap-1.5 transition-all duration-200 active:scale-98 ${
               addedSuccess
-                ? 'bg-emerald-500 text-white shadow-emerald-500/40 animate-pulse-glow'
-                : 'btn-primary group/btn'
+                ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                : 'btn-primary'
             }`}
             title="Thêm vào giỏ hàng"
           >
             {addedSuccess ? (
               <>
-                <Check size={18} className="animate-bounce" />
-                <span>Đã vào giỏ! ✨</span>
+                <Check size={14} />
+                <span>Đã thêm vào giỏ</span>
               </>
             ) : (
               <>
-                <ShoppingCart size={16} className="group-hover/btn:scale-125 group-hover/btn:rotate-6 transition-transform duration-300" />
+                <ShoppingCart size={14} />
                 <span>{product.variants && product.variants.length > 0 ? 'Chọn phiên bản' : 'Chọn mua'}</span>
               </>
             )}

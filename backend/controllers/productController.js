@@ -9,7 +9,7 @@ const getProducts = async (req, res) => {
   try {
     const {
       page = 1, limit = 12, search, category, minPrice, maxPrice,
-      sort = '-createdAt', isActive, isFeatured, brand, minStock, maxStock, size, color, ram, storage, rating
+      sort = '-createdAt', isActive, isFeatured, isSale, brand, minStock, maxStock, size, color, ram, storage, rating
     } = req.query;
 
     const query = {};
@@ -61,12 +61,20 @@ const getProducts = async (req, res) => {
     if (rating) {
       query.rating = { $gte: Number(rating) };
     }
-    if (isActive !== undefined && isActive !== 'undefined' && isActive !== '') {
+    // showAll=true: admin/manager muốn xem tất cả sản phẩm kể cả ẩn
+    if (req.query.showAll === 'true') {
+      // Không filter isActive
+    } else if (isActive !== undefined && isActive !== 'undefined' && isActive !== '') {
       query.isActive = isActive === 'true';
-    } else if (isActive === undefined || isActive === '') {
+    } else {
+      // Mặc định chỉ hiện sản phẩm đang hoạt động (cho public/khách)
       query.isActive = true;
     }
     if (isFeatured) query.isFeatured = isFeatured === 'true';
+    if (isSale === 'true' || isSale === true) {
+      conditions.push({ $expr: { $and: [{ $gt: ['$salePrice', 0] }, { $lt: ['$salePrice', '$price'] }] } });
+      query.$and = conditions;
+    }
     if (brand) query.brand = { $regex: brand, $options: 'i' };
     if (size) query['variants.size'] = size;
 
@@ -246,7 +254,18 @@ const updateStock = async (req, res) => {
 
     if (variantId) {
       const variant = product.variants.id(variantId);
-      if (variant) variant.stock = Number(stock);
+      if (variant) {
+        variant.stock = Number(stock);
+        // Tự động cập nhật lại tổng tồn kho từ các variants
+        if (product.variants && product.variants.length > 0) {
+          product.stock = product.variants.reduce((sum, v) => sum + Number(v.stock || 0), 0);
+        }
+      } else if (product.colors && product.colors.id(variantId)) {
+        const color = product.colors.id(variantId);
+        color.stock = Number(stock);
+      } else {
+        return res.status(404).json({ success: false, message: 'Không tìm thấy phân loại sản phẩm' });
+      }
     } else {
       product.stock = Number(stock);
     }

@@ -219,25 +219,39 @@ const ChatWidget = () => {
       >
         <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 flex flex-col overflow-hidden" style={{ height: 'min(580px, calc(100vh - 8rem))' }}>
           {/* Header */}
-          <div className="bg-gradient-to-r from-primary-600 to-primary-700 px-5 py-4 flex items-center justify-between shrink-0">
+          <div className="bg-gradient-to-r from-[#0084FF] via-[#0066CC] to-indigo-700 px-5 py-4 flex items-center justify-between shrink-0 shadow-md">
             <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="w-10 h-10 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center">
+                <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-inner">
                   <Bot className="w-5 h-5 text-white" />
                 </div>
-                <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-primary-600" />
+                <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-[#0084FF] animate-pulse" />
               </div>
               <div>
-                <h3 className="text-white font-bold text-sm">Trợ lý TechPhone AI</h3>
-                <p className="text-primary-200 text-xs">Trực tuyến tư vấn 24/7</p>
+                <div className="flex items-center gap-1.5">
+                  <h3 className="text-white font-black text-sm tracking-tight">Trợ lý TechPhone AI</h3>
+                  <span className="px-1.5 py-0.5 rounded-full bg-white/20 text-[9px] font-extrabold uppercase">24/7 Live</span>
+                </div>
+                <p className="text-blue-100 text-xs font-medium opacity-90">Phản hồi tức thì như Messenger</p>
               </div>
             </div>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors text-white"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            
+            <div className="flex items-center gap-2">
+              <Link
+                to="/support"
+                onClick={() => setIsOpen(false)}
+                className="px-2.5 py-1 bg-white/20 hover:bg-white/30 text-white rounded-xl text-[11px] font-extrabold flex items-center gap-1 backdrop-blur-sm transition-all hover:scale-105"
+                title="Mở Trung tâm hỗ trợ CSKH"
+              >
+                <span>🎧 Ticket CSKH</span>
+              </Link>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           {/* Messages */}
@@ -330,8 +344,8 @@ const ChatWidget = () => {
         onClick={() => setIsOpen(!isOpen)}
         className={`fixed bottom-20 md:bottom-6 right-4 sm:right-6 z-50 w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 group ${
           isOpen
-            ? 'bg-gray-800 hover:bg-gray-900 rotate-0'
-            : 'bg-gradient-to-br from-primary-600 to-blue-600 hover:scale-110 animate-pulse'
+            ? 'bg-slate-800 hover:bg-slate-900 rotate-0'
+            : 'bg-gradient-to-br from-[#0084FF] via-[#0066CC] to-indigo-600 hover:scale-110 animate-pulse'
         }`}
       >
         {isOpen ? (

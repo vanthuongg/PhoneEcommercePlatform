@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const bannerSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
-    image: { type: String, required: true },
+    image: { type: String },
+    imageUrl: { type: String },
     link: { type: String, default: '/shop' },
     type: {
       type: String,
@@ -15,7 +16,18 @@ const bannerSchema = new mongoose.Schema(
     startDate: { type: Date, default: Date.now },
     endDate: { type: Date },
   },
-  { timestamps: true }
+  { 
+    timestamps: true,
+    toJSON: { 
+      virtuals: true,
+      transform: function(doc, ret) {
+        ret.imageUrl = ret.imageUrl || ret.image || '';
+        ret.image = ret.image || ret.imageUrl || '';
+        return ret;
+      }
+    },
+    toObject: { virtuals: true }
+  }
 );
 
 module.exports = mongoose.model('Banner', bannerSchema);

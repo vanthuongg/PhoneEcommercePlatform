@@ -47,6 +47,7 @@ app.use('/api/reviews', require('./routes/reviews'));
 app.use('/api/stats', require('./routes/stats'));
 app.use('/api/chatbot', require('./routes/chatbot'));
 app.use('/api/settings', require('./routes/settings'));
+app.use('/api/inventory', require('./routes/inventory'));
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ success: true, message: 'Server is running 🚀' }));

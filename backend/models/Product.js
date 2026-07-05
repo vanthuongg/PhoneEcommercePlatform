@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const variantSchema = new mongoose.Schema({
-  color: { type: String, required: true },
+  color: { type: String, default: 'Mặc định' },
   storage: { type: String, required: true },
   ram: { type: String, default: '' },
   price: { type: Number, required: true },

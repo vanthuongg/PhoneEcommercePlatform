@@ -31,6 +31,24 @@ const voucherSchema = new mongoose.Schema(
     },
     applicableIds: [{ type: mongoose.Schema.Types.ObjectId }], // IDs của category, product hoặc user nếu không phải all
     applicableBrands: [{ type: String }], // Tên thương hiệu nếu applicableTo === 'brand'
+    tag: {
+      type: String,
+      enum: ['default', 'daily', 'flash', 'brand', 'shipping', 'new_user', 'vip'],
+      default: 'default',
+    },
+    scope: {
+      type: String,
+      enum: ['platform_freeship', 'platform_discount', 'shop_discount', 'all'],
+      default: 'all', // all = tự xác định theo discountType hoặc áp dụng sàn
+    },
+    paymentMethodRestriction: {
+      type: String,
+      enum: ['all', 'cod', 'momo', 'vnpay', 'bank_transfer', 'paypal', 'stripe'],
+      default: 'all', // all = áp dụng mọi hình thức thanh toán
+    },
+    savedByUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Danh sách user đã lưu vào Ví Voucher
+    badgeText: { type: String, default: '' }, // Nhãn nổi bật (VD: Freeship TechPhone, Ưu Đãi Hệ Thống)
+    isDaily: { type: Boolean, default: false }, // true = Cập nhật & thay đổi hàng ngày, false = Mặc định luôn có sẵn
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true }

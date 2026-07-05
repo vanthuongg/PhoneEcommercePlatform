@@ -53,7 +53,7 @@ const StaffOrders = () => {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const res = await orderAPI.getAll({ page, limit: 15, status: statusFilter });
+      const res = await orderAPI.getAll({ page, limit: 15, status: statusFilter, search });
       setOrders(res.data || []);
       setPagination(res.pagination || {});
     } finally {
@@ -61,7 +61,7 @@ const StaffOrders = () => {
     }
   };
 
-  useEffect(() => { fetchOrders(); }, [page, statusFilter]);
+  useEffect(() => { fetchOrders(); }, [page, statusFilter, search]);
 
   useEffect(() => {
     if (selectedOrder) {
@@ -83,10 +83,6 @@ const StaffOrders = () => {
       setUpdating(false);
     }
   };
-
-  const filteredOrders = search
-    ? orders.filter(o => o.orderCode?.toLowerCase().includes(search.toLowerCase()) || o.user?.name?.toLowerCase().includes(search.toLowerCase()))
-    : orders;
 
   return (
     <div className="p-6">
@@ -142,7 +138,7 @@ const StaffOrders = () => {
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {loading ? (
                 [...Array(8)].map((_, i) => <tr key={i}><td colSpan={7} className="px-4 py-4"><div className="h-4 bg-gray-200 rounded animate-pulse" /></td></tr>)
-              ) : filteredOrders.map((order) => (
+              ) : orders.map((order) => (
                 <tr key={order._id} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                   <td className="px-4 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100">#{order.orderCode}</td>
                   <td className="px-4 py-3">

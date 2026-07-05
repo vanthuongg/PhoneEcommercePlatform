@@ -6,5 +6,4 @@ dist/
 build/
 coverage/
 *.log
-.agent/
-DESIGN.md
+.agents/

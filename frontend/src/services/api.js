@@ -90,8 +90,11 @@ export const brandAPI = {
 export const voucherAPI = {
   getAll: () => api.get('/vouchers'),
   getAvailable: (orderValue) => api.get('/vouchers/available', { params: { orderValue } }),
+  getMyWallet: () => api.get('/vouchers/my-wallet'),
   getAllAdmin: () => api.get('/vouchers/admin'),
   validate: (code, orderValue, cartBrands) => api.post('/vouchers/validate', { code, orderValue, cartBrands }),
+  validateStack: (data) => api.post('/vouchers/validate-stack', data),
+  claim: (codeOrId) => api.post('/vouchers/claim', { code: codeOrId }),
   resetDaily: () => api.post('/vouchers/reset'),
   notifyUsers: (id) => api.post(`/vouchers/${id}/notify`),
   create: (data) => api.post('/vouchers', data),
@@ -177,7 +180,15 @@ export const chatbotAPI = {
 
 export const settingAPI = {
   get: () => api.get('/settings'),
+  getPublic: () => api.get('/settings/public'),
   update: (data) => api.put('/settings', data),
+};
+
+// Inventory (Tồn - Xuất - Nhập)
+export const inventoryAPI = {
+  getStats: () => api.get('/inventory/stats'),
+  getLogs: (params) => api.get('/inventory/logs', { params }),
+  createTransaction: (data) => api.post('/inventory/transaction', data),
 };
 
 export default api;

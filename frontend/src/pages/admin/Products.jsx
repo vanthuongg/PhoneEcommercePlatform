@@ -32,7 +32,7 @@ const Products = () => {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const res = await productAPI.getAll({ page, limit: 8, search, category: categoryFilter, isActive: undefined });
+      const res = await productAPI.getAll({ page, limit: 8, search, category: categoryFilter, showAll: true });
       setProducts(res.data || []);
       setPagination(res.pagination || {});
     } finally {

@@ -1,83 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useNotification } from '../../contexts/NotificationContext';
 import Breadcrumb from '../../components/ui/Breadcrumb';
 import RecentlyViewed from '../../components/product/RecentlyViewed';
 import VoucherPickerModal from '../../components/ui/VoucherPickerModal';
-import { Minus, Plus, Trash2, ShoppingBag, ArrowLeft, ArrowRight, ShieldCheck, Truck, Sparkles, Tag, Check, X } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingBag, ArrowLeft, ArrowRight, ShieldCheck, Truck, Sparkles, Tag, Check, X, Store, Gift } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const formatPrice = (price) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price || 0);
 
 const Cart = () => {
-  const { cart, loading, updateQuantity, removeItem } = useCart();
+  const {
+    cart,
+    loading,
+    updateQuantity,
+    removeItem,
+    appliedVouchers = { freeship: null, platform: null, shop: {} },
+    shippingFee = 0,
+    discountAmount = 0,
+    freeshipDiscount = 0,
+    platformDiscount = 0,
+    shopDiscount = 0,
+    totalDiscountAll = 0,
+    finalTotal = 0,
+    applyVoucherStack,
+    removeVoucher,
+  } = useCart();
+
   const { showConfirm } = useNotification();
   const navigate = useNavigate();
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
-  const [voucherCode, setVoucherCode] = useState(localStorage.getItem('appliedVoucher') || '');
 
-  const handleSelectVoucherFromModal = (v) => {
-    setAppliedVoucher(v);
-    localStorage.setItem('appliedVoucher', v.code);
-    toast.success(`Đã áp dụng mã giảm giá ${v.code}!`);
-  };
-  const [appliedVoucher, setAppliedVoucher] = useState(() => {
-    const saved = localStorage.getItem('appliedVoucher');
-    if (saved === 'VIPMEMBER500') return { code: 'VIPMEMBER500', discount: 500000, desc: 'Giảm 500k đơn hàng VIP' };
-    if (saved === 'TECHPAY200') return { code: 'TECHPAY200', discount: 200000, desc: 'Giảm 200k ưu đãi thanh toán' };
-    if (saved === 'WELCOME100') return { code: 'WELCOME100', discount: 100000, desc: 'Giảm 100k thành viên mới' };
-    if (saved === 'FREESHIP50') return { code: 'FREESHIP50', discount: 50000, desc: 'Hỗ trợ phí vận chuyển 50k' };
-    return null;
-  });
+  // Lấy danh sách thương hiệu trong giỏ hàng
+  const cartBrands = useMemo(() => {
+    const brands = (cart.items || []).map(item => item.product?.brand).filter(Boolean);
+    return [...new Set(brands)];
+  }, [cart.items]);
 
-  const handleApplyVoucher = (e) => {
-    e.preventDefault();
-    const cleanCode = voucherCode.trim().toUpperCase();
-    if (!cleanCode) {
-      toast.error('Vui lòng nhập mã giảm giá');
-      return;
+  const handleSelectStackFromModal = (stack) => {
+    if (applyVoucherStack) {
+      applyVoucherStack(stack);
     }
-    if (cleanCode === 'VIPMEMBER500') {
-      if (cart.totalPrice < 10000000) {
-        toast.error('Mã VIPMEMBER500 áp dụng cho đơn từ 10 triệu');
-        return;
-      }
-      setAppliedVoucher({ code: 'VIPMEMBER500', discount: 500000, desc: 'Giảm 500k đơn hàng VIP' });
-      localStorage.setItem('appliedVoucher', 'VIPMEMBER500');
-      toast.success('Áp dụng thành công mã giảm giá 500.000đ!');
-    } else if (cleanCode === 'TECHPAY200') {
-      setAppliedVoucher({ code: 'TECHPAY200', discount: 200000, desc: 'Giảm 200k ưu đãi thanh toán' });
-      localStorage.setItem('appliedVoucher', 'TECHPAY200');
-      toast.success('Áp dụng thành công mã giảm giá 200.000đ!');
-    } else if (cleanCode === 'WELCOME100') {
-      setAppliedVoucher({ code: 'WELCOME100', discount: 100000, desc: 'Giảm 100k thành viên mới' });
-      localStorage.setItem('appliedVoucher', 'WELCOME100');
-      toast.success('Áp dụng thành công mã giảm giá 100.000đ!');
-    } else if (cleanCode === 'FREESHIP50') {
-      setAppliedVoucher({ code: 'FREESHIP50', discount: 50000, desc: 'Hỗ trợ phí vận chuyển 50k' });
-      localStorage.setItem('appliedVoucher', 'FREESHIP50');
-      toast.success('Áp dụng thành công mã giảm giá 50.000đ!');
-    } else {
-      toast.error('Mã giảm giá không hợp lệ hoặc đã hết hạn (Thử: WELCOME100, TECHPAY200)');
-    }
-  };
-
-  const handleRemoveVoucher = () => {
-    showConfirm({
-      title: 'Hủy áp dụng mã giảm giá?',
-      message: 'Bạn có chắc chắn muốn gỡ bỏ mã ưu đãi đang áp dụng cho đơn hàng này?',
-      type: 'warning',
-      confirmText: 'Đồng ý gỡ',
-      cancelText: 'Giữ lại',
-      onConfirm: () => {
-        setAppliedVoucher(null);
-        setVoucherCode('');
-        localStorage.removeItem('appliedVoucher');
-        toast.info('Đã gỡ bỏ mã giảm giá');
-      }
-    });
   };
 
   if (!cart.items?.length) {
@@ -109,11 +74,14 @@ const Cart = () => {
   }
 
   const freeshipThreshold = 300000;
-  const isFreeship = cart.totalPrice >= freeshipThreshold;
+  const isFreeshipEligible = cart.totalPrice >= freeshipThreshold;
   const missingForFreeship = Math.max(0, freeshipThreshold - cart.totalPrice);
-  const rawShippingFee = isFreeship ? 0 : 30000;
-  const discountAmount = appliedVoucher ? appliedVoucher.discount : 0;
-  const finalTotal = Math.max(0, cart.totalPrice + rawShippingFee - discountAmount);
+  const rawShippingFee = isFreeshipEligible ? 0 : 30000;
+
+  const hasAnyVoucher =
+    appliedVouchers?.freeship ||
+    appliedVouchers?.platform ||
+    Object.keys(appliedVouchers?.shop || {}).length > 0;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8 transition-colors">
@@ -131,7 +99,7 @@ const Cart = () => {
           {/* Freeship Progress Bar */}
           <div className="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800/60 rounded-2xl px-5 py-3 flex items-center gap-3 text-xs text-amber-800 dark:text-amber-300 font-bold shadow-sm">
             <Truck size={20} className="text-amber-600 shrink-0 animate-bounce" />
-            {isFreeship ? (
+            {isFreeshipEligible ? (
               <span>🎉 Đơn hàng của bạn đạt tiêu chuẩn <strong className="text-emerald-600 dark:text-emerald-400 font-black">MIỄN PHÍ GIAO HÀNG SIÊU TỐC 2H</strong></span>
             ) : (
               <span>Mua thêm <strong className="text-red-600 dark:text-red-400 font-black">{formatPrice(missingForFreeship)}</strong> để được Miễn phí vận chuyển toàn quốc</span>
@@ -219,43 +187,84 @@ const Cart = () => {
 
           {/* Order Summary Box (4 cols) */}
           <div className="lg:col-span-4 sticky top-24 space-y-6">
-            {/* Voucher Box */}
+            {/* Shopee Voucher Stacking Box */}
             <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="font-extrabold text-sm text-gray-900 dark:text-white flex items-center gap-2 uppercase tracking-wider">
-                  <Tag size={18} className="text-primary" /> Mã ưu đãi / Voucher
+                  <Gift size={18} className="text-primary-600" /> TechPhone Voucher (3 Tầng)
                 </h3>
                 <button
                   type="button"
                   onClick={() => setIsVoucherModalOpen(true)}
-                  className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
+                  className="text-xs font-bold text-primary-600 hover:underline flex items-center gap-1"
                 >
-                  Chọn voucher
+                  {hasAnyVoucher ? 'Thay đổi' : 'Chọn hoặc nhập'}
                 </button>
               </div>
               
-              {appliedVoucher ? (
-                <div className="bg-primary/10 border border-primary/30 rounded-2xl p-4 flex items-center justify-between">
-                  <div>
-                    <div className="flex items-center gap-1.5 font-black text-primary text-sm">
-                      <Check size={16} /> {appliedVoucher.code}
+              {hasAnyVoucher ? (
+                <div className="space-y-2 pt-1">
+                  {/* Layer 1: Freeship */}
+                  {appliedVouchers?.freeship && (
+                    <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 rounded-2xl p-3 flex items-center justify-between text-xs font-bold">
+                      <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 min-w-0">
+                        <Truck size={16} className="text-emerald-600 shrink-0" />
+                        <span className="truncate">{appliedVouchers.freeship.code} - Freeship TechPhone</span>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-emerald-600">-{formatPrice(freeshipDiscount || 30000)}</span>
+                        <button onClick={() => removeVoucher && removeVoucher('freeship')} className="text-gray-400 hover:text-red-500 p-0.5">
+                          <X size={15} />
+                        </button>
+                      </div>
                     </div>
-                    <div className="text-xs text-gray-500 mt-0.5">{appliedVoucher.desc}</div>
-                  </div>
-                  <button onClick={handleRemoveVoucher} className="text-gray-400 hover:text-red-500 p-1 transition-colors">
-                    <X size={18} />
-                  </button>
+                  )}
+
+                  {/* Layer 2: Platform */}
+                  {appliedVouchers?.platform && (
+                    <div className="bg-primary-50 dark:bg-primary-950/30 border border-primary-200 dark:border-primary-800/60 rounded-2xl p-3 flex items-center justify-between text-xs font-bold">
+                      <div className="flex items-center gap-2 text-primary-800 dark:text-primary-300 min-w-0">
+                        <Tag size={16} className="text-primary-600 shrink-0" />
+                        <span className="truncate">{appliedVouchers.platform.code} - Hệ Thống TechPhone</span>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-primary-600">-{formatPrice(platformDiscount)}</span>
+                        <button onClick={() => removeVoucher && removeVoucher('platform')} className="text-gray-400 hover:text-red-500 p-0.5">
+                          <X size={15} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Layer 3: Shop Brands */}
+                  {Object.entries(appliedVouchers?.shop || {}).map(([brand, v]) => {
+                    if (!v) return null;
+                    return (
+                      <div key={brand} className="bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/60 rounded-2xl p-3 flex items-center justify-between text-xs font-bold">
+                        <div className="flex items-center gap-2 text-indigo-800 dark:text-indigo-300 min-w-0">
+                          <Store size={16} className="text-indigo-600 shrink-0" />
+                          <span className="truncate">{v.code} ({brand})</span>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-indigo-600">-{formatPrice(v.discount || shopDiscount)}</span>
+                          <button onClick={() => removeVoucher && removeVoucher('shop', brand)} className="text-gray-400 hover:text-red-500 p-0.5">
+                            <X size={15} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               ) : (
                 <button
                   type="button"
                   onClick={() => setIsVoucherModalOpen(true)}
-                  className="w-full py-3.5 px-4 rounded-2xl border-2 border-dashed border-primary/40 bg-blue-50/50 dark:bg-blue-900/10 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-primary font-black text-xs flex items-center justify-between transition-all group"
+                  className="w-full py-3.5 px-4 rounded-2xl border-2 border-dashed border-primary/40 bg-primary-50/50 dark:bg-primary-900/10 hover:bg-primary-50 dark:hover:bg-primary-900/20 text-primary-600 dark:text-primary-400 font-black text-xs flex items-center justify-between transition-all group shadow-sm"
                 >
                   <span className="flex items-center gap-2">
-                    <Tag size={16} className="group-hover:scale-110 transition-transform" /> Nhấn để chọn hoặc nhập mã giảm giá
+                    <Gift size={16} className="group-hover:scale-110 transition-transform text-primary-600" /> Chọn hoặc nhập mã combo 3 tầng
                   </span>
-                  <span className="bg-primary text-white px-2.5 py-1 rounded-xl text-[10px]">Chọn mã</span>
+                  <span className="bg-primary-600 text-white px-2.5 py-1 rounded-xl text-[10px]">Chọn mã</span>
                 </button>
               )}
             </div>
@@ -263,7 +272,7 @@ const Cart = () => {
             {/* Total Box */}
             <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 sm:p-8 border border-gray-100 dark:border-gray-800 shadow-sm space-y-6">
               <h2 className="text-lg font-black text-gray-900 dark:text-white pb-4 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2">
-                <Sparkles size={20} className="text-primary" /> Thanh Toán Đơn Hàng
+                <Sparkles size={20} className="text-primary-600" /> Thanh Toán Đơn Hàng
               </h2>
 
               <div className="space-y-3.5 text-sm">
@@ -274,13 +283,25 @@ const Cart = () => {
                 <div className="flex justify-between text-gray-600 dark:text-gray-400">
                   <span>Phí vận chuyển:</span>
                   <span className="font-bold text-gray-900 dark:text-white">
-                    {isFreeship ? <span className="text-emerald-600 font-extrabold">MIỄN PHÍ</span> : formatPrice(rawShippingFee)}
+                    {rawShippingFee === 0 ? <span className="text-emerald-600 font-extrabold">0đ (MIỄN PHÍ)</span> : formatPrice(rawShippingFee)}
                   </span>
                 </div>
-                {appliedVoucher && (
-                  <div className="flex justify-between text-emerald-600 font-bold">
-                    <span>Voucher ({appliedVoucher.code}):</span>
-                    <span>-{formatPrice(appliedVoucher.discount)}</span>
+                {freeshipDiscount > 0 && rawShippingFee > 0 && (
+                  <div className="flex justify-between text-emerald-600 font-bold text-xs">
+                    <span>• Freeship TechPhone:</span>
+                    <span>-{formatPrice(freeshipDiscount)}</span>
+                  </div>
+                )}
+                {platformDiscount > 0 && (
+                  <div className="flex justify-between text-primary-600 font-bold text-xs">
+                    <span>• Voucher Hệ Thống:</span>
+                    <span>-{formatPrice(platformDiscount)}</span>
+                  </div>
+                )}
+                {shopDiscount > 0 && (
+                  <div className="flex justify-between text-indigo-600 font-bold text-xs">
+                    <span>• Voucher Thương hiệu:</span>
+                    <span>-{formatPrice(shopDiscount)}</span>
                   </div>
                 )}
                 <div className="pt-4 border-t border-dashed border-gray-200 dark:border-gray-800 flex justify-between items-baseline">
@@ -293,8 +314,8 @@ const Cart = () => {
 
               <div className="space-y-3 pt-2">
                 <button
-                  onClick={() => navigate('/checkout', { state: { appliedVoucher, finalTotal } })}
-                  className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-indigo-600 text-white font-black text-base shadow-xl shadow-blue-500/30 flex items-center justify-center gap-2.5 transition-all hover:scale-[1.02] active:scale-95"
+                  onClick={() => navigate('/checkout')}
+                  className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-primary-600 to-teal-600 hover:from-primary-700 hover:to-teal-700 text-white font-black text-base shadow-xl shadow-primary/30 flex items-center justify-center gap-2.5 transition-all hover:scale-[1.02] active:scale-95"
                 >
                   <span>Tiến Hành Đặt Hàng</span> <ArrowRight size={18} />
                 </button>
@@ -322,9 +343,10 @@ const Cart = () => {
       <VoucherPickerModal
         isOpen={isVoucherModalOpen}
         onClose={() => setIsVoucherModalOpen(false)}
-        onSelect={handleSelectVoucherFromModal}
-        currentVoucherCode={appliedVoucher?.code}
+        onSelectStack={handleSelectStackFromModal}
+        appliedVouchers={appliedVouchers}
         orderTotal={cart.totalPrice}
+        cartBrands={cartBrands}
       />
     </div>
   );

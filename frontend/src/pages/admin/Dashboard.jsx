@@ -56,12 +56,20 @@ const Dashboard = () => {
     </div>
   );
 
+  // Tính trend thực từ dữ liệu API
+  const revenueGrowth = stats?.overview?.revenueGrowth ?? null;
+  const cancelRate = stats?.overview?.returnRate ?? null;
+  const deliveredOrders = stats?.ordersByStatus?.delivered || 0;
+  const totalOrders = stats?.overview?.totalOrders || 0;
+  const deliveryRate = totalOrders > 0 ? +((deliveredOrders / totalOrders) * 100).toFixed(1) : null;
+
   const kpis = [
     {
       label: 'Tổng doanh thu',
       value: formatPrice(stats?.overview?.totalRevenue || 0),
       icon: DollarSign,
-      trend: stats?.overview?.revenueGrowth || +12.5,
+      trend: revenueGrowth,
+      trendLabel: 'so với tháng trước',
       color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400',
       iconBg: 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/30',
     },
@@ -69,15 +77,17 @@ const Dashboard = () => {
       label: 'Doanh thu tháng này',
       value: formatPrice(stats?.overview?.monthlyRevenue || 0),
       icon: TrendingUp,
-      trend: +8.4,
+      trend: revenueGrowth,
+      trendLabel: 'tăng trưởng tháng',
       color: 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400',
       iconBg: 'bg-gradient-to-br from-primary-600 to-indigo-600 text-white shadow-lg shadow-primary-500/30',
     },
     {
-      label: 'Tổng đơn điện thoại',
+      label: 'Tổng đơn hàng',
       value: (stats?.overview?.totalOrders || 0).toLocaleString(),
       icon: Package,
-      trend: +15.2,
+      trend: deliveryRate,
+      trendLabel: 'tỷ lệ giao thành công',
       color: 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400',
       iconBg: 'bg-gradient-to-br from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/30',
     },
@@ -85,7 +95,8 @@ const Dashboard = () => {
       label: 'Khách hàng thành viên',
       value: (stats?.overview?.totalUsers || 0).toLocaleString(),
       icon: Users,
-      trend: +5.1,
+      trend: cancelRate !== null ? -cancelRate : null,
+      trendLabel: 'tỷ lệ hủy đơn',
       color: 'bg-orange-50 text-orange-600 dark:bg-orange-950/40 dark:text-orange-400',
       iconBg: 'bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/30',
     },
@@ -119,10 +130,10 @@ const Dashboard = () => {
               <div className="space-y-1">
                 <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{kpi.label}</p>
                 <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white font-display">{kpi.value}</p>
-                {kpi.trend !== undefined && (
+                {kpi.trend !== null && kpi.trend !== undefined && (
                   <span className={`text-[10px] font-extrabold inline-flex items-center gap-1 mt-0.5 px-2 py-0.5 rounded-lg ${kpi.trend >= 0 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' : 'bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-300'}`}>
                     {kpi.trend >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                    {kpi.trend >= 0 ? `+${kpi.trend}%` : `${kpi.trend}%`} so với tháng trước
+                    {kpi.trend >= 0 ? `+${kpi.trend}%` : `${kpi.trend}%`} {kpi.trendLabel || 'so với tháng trước'}
                   </span>
                 )}
               </div>

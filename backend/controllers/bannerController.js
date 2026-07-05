@@ -26,6 +26,7 @@ exports.createBanner = async (req, res) => {
     const data = { ...req.body };
     if (req.file) {
       data.imageUrl = `/uploads/${req.file.filename}`;
+      data.image = `/uploads/${req.file.filename}`;
     }
     const banner = await Banner.create(data);
     res.status(201).json({ success: true, data: banner });
@@ -39,6 +40,7 @@ exports.updateBanner = async (req, res) => {
     const data = { ...req.body };
     if (req.file) {
       data.imageUrl = `/uploads/${req.file.filename}`;
+      data.image = `/uploads/${req.file.filename}`;
     }
     const banner = await Banner.findByIdAndUpdate(req.params.id, data, { new: true });
     if (!banner) return res.status(404).json({ success: false, message: 'Không tìm thấy banner' });

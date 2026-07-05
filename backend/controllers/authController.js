@@ -1,8 +1,11 @@
 const User = require('../models/User');
+const Setting = require('../models/Setting');
+const Notification = require('../models/Notification');
 const jwt = require('jsonwebtoken');
 
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE });
+const generateToken = (id, expiresInDays) => {
+  const expiresIn = expiresInDays ? `${expiresInDays}d` : (process.env.JWT_EXPIRE || '7d');
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn });
 };
 
 // @desc    Register user
@@ -12,13 +15,28 @@ const register = async (req, res) => {
   try {
     const { name, email, password, phone } = req.body;
 
+    const settings = await Setting.findOne();
+    if (settings && settings.allowRegistration === false) {
+      return res.status(403).json({ success: false, message: 'Hệ thống hiện tạm dừng nhận đăng ký tài khoản mới' });
+    }
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ success: false, message: 'Email đã được sử dụng' });
     }
 
     const user = await User.create({ name, email, password, phone });
-    const token = generateToken(user._id);
+    const token = generateToken(user._id, settings && settings.sessionTimeoutDays);
+
+    if (settings && settings.newUserNotify !== false) {
+      Notification.create({
+        role: 'admin',
+        title: `👤 Thành viên mới đăng ký`,
+        message: `Khách hàng ${user.name} (${user.email}) vừa tạo tài khoản thành công.`,
+        type: 'user',
+        link: `/admin/users`,
+      }).catch(console.error);
+    }
 
     res.status(201).json({
       success: true,
@@ -59,10 +77,15 @@ const login = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Tài khoản đã bị khóa' });
     }
 
+    const settings = await Setting.findOne();
+    if (settings && settings.maintenanceMode === true && user.role !== 'admin' && user.role !== 'manager') {
+      return res.status(403).json({ success: false, message: 'Hệ thống đang bảo trì, vui lòng quay lại sau' });
+    }
+
     user.lastLogin = Date.now();
     await user.save({ validateBeforeSave: false });
 
-    const token = generateToken(user._id);
+    const token = generateToken(user._id, settings && settings.sessionTimeoutDays);
 
     res.json({
       success: true,
@@ -134,6 +157,8 @@ const googleLogin = async (req, res) => {
     const payload = ticket.getPayload();
     const { sub: googleId, email, name, picture: avatar } = payload;
     
+    const settings = await Setting.findOne() || {};
+
     // Check if user exists
     let user = await User.findOne({ email });
     
@@ -151,6 +176,16 @@ const googleLogin = async (req, res) => {
         avatar,
         role: 'customer'
       });
+
+      if (settings.newUserNotify !== false) {
+        Notification.create({
+          role: 'admin',
+          title: `👤 Thành viên mới đăng ký Google`,
+          message: `Khách hàng ${user.name} (${user.email}) vừa đăng ký qua Google.`,
+          type: 'user',
+          link: `/admin/users`,
+        }).catch(console.error);
+      }
     }
     
     if (!user.isActive) {
@@ -160,7 +195,7 @@ const googleLogin = async (req, res) => {
     user.lastLogin = Date.now();
     await user.save({ validateBeforeSave: false });
     
-    const jwtToken = generateToken(user._id);
+    const jwtToken = generateToken(user._id, settings.sessionTimeoutDays);
     
     res.json({
       success: true,

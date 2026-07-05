@@ -1,5 +1,7 @@
 const Review = require('../models/Review');
 const Order = require('../models/Order');
+const Setting = require('../models/Setting');
+const Notification = require('../models/Notification');
 
 // @desc    Get reviews for a product
 // @route   GET /api/reviews/:productId
@@ -58,6 +60,18 @@ const createReview = async (req, res) => {
         images: images || [],
         isVerifiedPurchase: !!hasPurchased,
       });
+
+      const settings = await Setting.findOne() || {};
+      if (settings.newReviewNotify !== false) {
+        await review.populate('product', 'name');
+        Notification.create({
+          role: 'admin',
+          title: `⭐ Đánh giá mới ${rating} sao`,
+          message: `Khách hàng ${req.user.name} vừa đánh giá ${rating} sao cho sản phẩm "${review.product ? review.product.name : 'Sản phẩm'}".`,
+          type: 'review',
+          link: `/admin/reviews`,
+        }).catch(console.error);
+      }
     }
 
     await review.populate('user', 'name avatar');

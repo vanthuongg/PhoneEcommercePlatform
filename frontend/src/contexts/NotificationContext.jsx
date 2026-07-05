@@ -80,7 +80,7 @@ export const NotificationProvider = ({ children }) => {
 
       {/* Global Center-Screen Confirmation Modal (Xác nhận ngay trước màn hình) */}
       {confirmConfig && (
-        <div className="fixed inset-0 z-99999 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md animate-fade-in pointer-events-auto">
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md animate-fade-in pointer-events-auto">
           <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-premium border border-slate-200 dark:border-slate-800 animate-scale-in relative overflow-hidden space-y-5">
             {/* Ambient Top Glow */}
             <div className={`absolute top-0 left-0 right-0 h-2 ${
