@@ -9,6 +9,6 @@ router.use(authorize('admin', 'manager', 'staff'));
 
 router.get('/stats', getInventoryStats);
 router.get('/logs', getInventoryLogs);
-router.post('/transaction', createStockTransaction);
+router.post('/transaction', authorize('admin', 'manager'), createStockTransaction);
 
 module.exports = router;

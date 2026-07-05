@@ -168,45 +168,43 @@ const Checkout = () => {
     const totalDiscountVal = (successOrder.discount || 0) + (successOrder.freeshipDiscount || 0);
 
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 py-6 sm:py-10 px-4 transition-colors relative overflow-hidden font-sans flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 py-3 sm:py-5 px-3 sm:px-4 transition-colors relative overflow-hidden font-sans flex items-center justify-center">
         {/* Ambient background glow */}
-        <div className="absolute top-1/4 left-1/4 w-[350px] h-[350px] bg-emerald-500/10 dark:bg-emerald-500/15 rounded-full blur-[100px] pointer-events-none animate-pulse-slow" />
-        <div className="absolute bottom-1/4 right-1/4 w-[350px] h-[350px] bg-primary-500/10 dark:bg-primary-500/15 rounded-full blur-[100px] pointer-events-none animate-float-slow" />
+        <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] bg-emerald-500/10 dark:bg-emerald-500/15 rounded-full blur-[100px] pointer-events-none animate-pulse-slow" />
+        <div className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] bg-primary-500/10 dark:bg-primary-500/15 rounded-full blur-[100px] pointer-events-none animate-float-slow" />
 
         {/* Compact Main Container */}
-        <div className="w-full max-w-4xl mx-auto space-y-6 relative z-10">
+        <div className="w-full max-w-4xl mx-auto space-y-4 relative z-10">
           
           {/* Hero Celebration Card */}
-          <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800/80 shadow-premium text-center relative overflow-hidden animate-scale-in">
-            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-primary-600" />
+          <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-2xl p-4 sm:p-5 border border-slate-200/80 dark:border-slate-800/80 shadow-premium relative overflow-hidden animate-scale-in">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-primary-600" />
             
-            <div className="max-w-2xl mx-auto space-y-4">
-              {/* Icon */}
-              <div className="relative mx-auto w-16 h-16">
-                <div className="absolute inset-0 bg-emerald-400 dark:bg-emerald-500 rounded-full animate-ping opacity-25" />
-                <div className="relative w-16 h-16 bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 rounded-full flex items-center justify-center text-white shadow-xl shadow-emerald-500/30 ring-4 ring-emerald-500/10 mx-auto">
-                  <Sparkles className="absolute -top-1 -right-1 w-4 h-4 text-yellow-300 animate-spin-slow" />
-                  <CheckCircle2 size={32} className="drop-shadow-sm" />
+            <div className="max-w-2xl mx-auto space-y-3">
+              {/* Icon & Title inline/compact */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <div className="relative w-12 h-12 bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-emerald-500/30 ring-4 ring-emerald-500/10 shrink-0">
+                  <Sparkles className="absolute -top-1 -right-1 w-3.5 h-3.5 text-yellow-300 animate-spin-slow" />
+                  <CheckCircle2 size={24} className="drop-shadow-sm" />
+                </div>
+                <div className="text-center sm:text-left space-y-0.5">
+                  <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 text-[10px] font-black tracking-wider uppercase border border-emerald-200/60 dark:border-emerald-800/60">
+                    <Zap size={10} className="fill-emerald-500" />
+                    <span>Đơn Hàng Đã Xử Lý Thành Công</span>
+                  </div>
+                  <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+                    Cảm Ơn Bạn Đã Đặt Hàng! 🎉
+                  </h1>
                 </div>
               </div>
 
-              {/* Title & Subtitle */}
-              <div className="space-y-1.5">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 text-[11px] font-black tracking-wider uppercase border border-emerald-200/60 dark:border-emerald-800/60">
-                  <Zap size={12} className="fill-emerald-500" />
-                  <span>Đơn Hàng Đã Xử Lý Thành Công</span>
-                </div>
-                <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
-                  Cảm Ơn Bạn Đã Đặt Hàng! 🎉
-                </h1>
-                <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium leading-relaxed max-w-lg mx-auto">
-                  Hệ thống TechPhone Store đã ghi nhận đơn hàng. Chúng tôi đang chuẩn bị giao siêu tốc 2H đến tận tay bạn.
-                </p>
-              </div>
+              <p className="text-slate-500 dark:text-slate-400 text-xs font-medium leading-normal max-w-md mx-auto text-center">
+                Hệ thống TechPhone Store đã ghi nhận đơn hàng. Chúng tôi đang chuẩn bị giao siêu tốc 2H đến tận tay bạn.
+              </p>
 
               {/* Order Code & Delivery Badge */}
-              <div className="pt-1 flex flex-wrap items-center justify-center gap-2.5">
-                <div className="inline-flex items-center gap-2 bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 px-3.5 py-2 rounded-xl text-xs shadow-2xs">
+              <div className="flex flex-wrap items-center justify-center gap-2 pt-0.5">
+                <div className="inline-flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 px-3 py-1 rounded-lg text-xs shadow-2xs">
                   <span className="font-bold text-slate-400">Mã đơn:</span>
                   <span className="font-mono font-black text-primary-600 dark:text-primary-400">
                     #{orderCode}
@@ -214,48 +212,48 @@ const Checkout = () => {
                   <button
                     type="button"
                     onClick={handleCopyOrderCode}
-                    className="p-1 rounded-lg bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-all active:scale-95 shadow-2xs ml-0.5"
+                    className="p-1 rounded bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-all active:scale-95 shadow-2xs ml-0.5"
                     title="Sao chép"
                   >
-                    {copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                    {copied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
                   </button>
                 </div>
-                <div className="inline-flex items-center gap-1.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-3 py-2 rounded-xl text-xs font-extrabold">
-                  <Truck size={14} className="animate-bounce-subtle" />
+                <div className="inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-lg text-xs font-extrabold">
+                  <Truck size={13} className="animate-bounce-subtle" />
                   <span>Giao hỏa tốc 2H</span>
                 </div>
               </div>
 
               {/* Compact Timeline Stepper */}
-              <div className="pt-5 border-t border-slate-100 dark:border-slate-800/80">
+              <div className="pt-2.5 border-t border-slate-100 dark:border-slate-800/80">
                 <div className="grid grid-cols-4 gap-2">
-                  <div className="flex flex-col items-center text-center p-2 rounded-xl bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/20">
-                    <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center font-black text-[10px] mb-1">
-                      <Check size={12} />
+                  <div className="flex flex-col items-center text-center p-1.5 rounded-lg bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/20">
+                    <div className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center font-black text-[9px] mb-0.5">
+                      <Check size={10} />
                     </div>
-                    <span className="text-[11px] font-extrabold text-slate-800 dark:text-slate-100">Đã đặt hàng</span>
-                    <span className="text-[9px] text-emerald-600 dark:text-emerald-400">Vừa xong</span>
+                    <span className="text-[10px] font-extrabold text-slate-800 dark:text-slate-100">Đã đặt hàng</span>
+                    <span className="text-[8px] text-emerald-600 dark:text-emerald-400">Vừa xong</span>
                   </div>
-                  <div className="flex flex-col items-center text-center p-2 rounded-xl bg-primary-500/5 dark:bg-primary-500/10 border border-primary-500/20 animate-pulse">
-                    <div className="w-6 h-6 rounded-full bg-primary-600 text-white flex items-center justify-center font-black text-[10px] mb-1">
-                      <Clock size={12} className="animate-spin-slow" />
+                  <div className="flex flex-col items-center text-center p-1.5 rounded-lg bg-primary-500/5 dark:bg-primary-500/10 border border-primary-500/20 animate-pulse">
+                    <div className="w-5 h-5 rounded-full bg-primary-600 text-white flex items-center justify-center font-black text-[9px] mb-0.5">
+                      <Clock size={10} className="animate-spin-slow" />
                     </div>
-                    <span className="text-[11px] font-extrabold text-slate-800 dark:text-slate-100">Đang đóng gói</span>
-                    <span className="text-[9px] text-primary-600 dark:text-primary-400">Xử lý</span>
+                    <span className="text-[10px] font-extrabold text-slate-800 dark:text-slate-100">Đang đóng gói</span>
+                    <span className="text-[8px] text-primary-600 dark:text-primary-400">Xử lý</span>
                   </div>
-                  <div className="flex flex-col items-center text-center p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/50 opacity-60">
-                    <div className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 flex items-center justify-center font-black text-[10px] mb-1">
-                      <Truck size={12} />
+                  <div className="flex flex-col items-center text-center p-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/50 opacity-60">
+                    <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 flex items-center justify-center font-black text-[9px] mb-0.5">
+                      <Truck size={10} />
                     </div>
-                    <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">Giao 2H</span>
-                    <span className="text-[9px] text-slate-400">Chờ giao</span>
+                    <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300">Giao 2H</span>
+                    <span className="text-[8px] text-slate-400">Chờ giao</span>
                   </div>
-                  <div className="flex flex-col items-center text-center p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/50 opacity-60">
-                    <div className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 flex items-center justify-center font-black text-[10px] mb-1">
-                      <Gift size={12} />
+                  <div className="flex flex-col items-center text-center p-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/50 opacity-60">
+                    <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 flex items-center justify-center font-black text-[9px] mb-0.5">
+                      <Gift size={10} />
                     </div>
-                    <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">Nhận hàng</span>
-                    <span className="text-[9px] text-slate-400">Hoàn tất</span>
+                    <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300">Nhận hàng</span>
+                    <span className="text-[8px] text-slate-400">Hoàn tất</span>
                   </div>
                 </div>
               </div>
@@ -263,34 +261,34 @@ const Checkout = () => {
           </div>
 
           {/* 2-Column Compact Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
             
             {/* Left: Items & Info (7 cols) */}
-            <div className="md:col-span-7 space-y-6">
+            <div className="md:col-span-7 space-y-4">
               
               {/* Order Items */}
-              <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-                  <div className="flex items-center gap-2">
-                    <ShoppingBag size={18} className="text-primary-600 dark:text-primary-400" />
-                    <h2 className="text-sm font-black text-slate-900 dark:text-white">Sản Phẩm Đã Đặt ({successOrder.items?.length || 0})</h2>
+              <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-2xl p-3.5 sm:p-4 border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center gap-1.5">
+                    <ShoppingBag size={16} className="text-primary-600 dark:text-primary-400" />
+                    <h2 className="text-xs font-black text-slate-900 dark:text-white">Sản Phẩm Đã Đặt ({successOrder.items?.length || 0})</h2>
                   </div>
-                  <span className="text-[11px] font-extrabold text-slate-500">Bảo hành 24T</span>
+                  <span className="text-[10px] font-extrabold text-slate-500">Bảo hành 24T</span>
                 </div>
 
-                <div className="divide-y divide-slate-100 dark:divide-slate-800/80">
+                <div className="divide-y divide-slate-100 dark:divide-slate-800/80 max-h-36 overflow-y-auto pr-1">
                   {(successOrder.items || []).map((item, idx) => (
-                    <div key={idx} className="py-3 first:pt-0 last:pb-0 flex items-center gap-3">
+                    <div key={idx} className="py-2 first:pt-0 last:pb-0 flex items-center gap-2.5">
                       <img
                         src={item.image || 'https://via.placeholder.com/60'}
                         alt={item.name}
-                        className="w-12 h-12 rounded-xl object-cover border border-slate-200/80 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800 shrink-0"
+                        className="w-10 h-10 rounded-lg object-cover border border-slate-200/80 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800 shrink-0"
                       />
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm truncate">
+                        <h3 className="font-bold text-slate-900 dark:text-white text-xs truncate">
                           {item.name}
                         </h3>
-                        <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                        <div className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
                           {item.color && <span>{item.color}</span>}
                           {item.color && item.size && <span>•</span>}
                           {item.size && <span>{item.size}</span>}
@@ -298,7 +296,7 @@ const Checkout = () => {
                           <span className="font-bold">SL: x{item.quantity || 1}</span>
                         </div>
                       </div>
-                      <div className="text-right shrink-0 font-black text-slate-900 dark:text-white text-xs sm:text-sm">
+                      <div className="text-right shrink-0 font-black text-slate-900 dark:text-white text-xs">
                         {formatPrice((item.price || 0) * (item.quantity || 1))}
                       </div>
                     </div>
@@ -307,31 +305,31 @@ const Checkout = () => {
               </div>
 
               {/* Shipping & Payment Info */}
-              <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-4">
-                <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
-                  <MapPin size={18} className="text-emerald-600 dark:text-emerald-400" />
-                  <h2 className="text-sm font-black text-slate-900 dark:text-white">Thông Tin Nhận Hàng & Thanh Toán</h2>
+              <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-2xl p-3.5 sm:p-4 border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-3">
+                <div className="flex items-center gap-1.5 pb-2 border-b border-slate-100 dark:border-slate-800">
+                  <MapPin size={16} className="text-emerald-600 dark:text-emerald-400" />
+                  <h2 className="text-xs font-black text-slate-900 dark:text-white">Thông Tin Nhận Hàng & Thanh Toán</h2>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                  <div className="bg-slate-50/80 dark:bg-slate-800/40 p-3.5 rounded-xl border border-slate-200/60 dark:border-slate-700/60 space-y-2">
-                    <span className="font-extrabold uppercase tracking-wider text-slate-400 text-[10px] block">Người nhận</span>
-                    <p className="font-black text-slate-900 dark:text-white text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <div className="bg-slate-50/80 dark:bg-slate-800/40 p-2.5 rounded-xl border border-slate-200/60 dark:border-slate-700/60 space-y-1">
+                    <span className="font-extrabold uppercase tracking-wider text-slate-400 text-[9px] block">Người nhận</span>
+                    <p className="font-black text-slate-900 dark:text-white text-xs">
                       {successOrder.shippingAddress?.name}
                     </p>
-                    <p className="font-medium text-slate-600 dark:text-slate-300">
+                    <p className="font-medium text-slate-600 dark:text-slate-300 text-[11px]">
                       📞 {successOrder.shippingAddress?.phone}
                     </p>
-                    <p className="text-slate-500 dark:text-slate-400 line-clamp-2">
+                    <p className="text-slate-500 dark:text-slate-400 text-[11px] line-clamp-2">
                       📍 {[successOrder.shippingAddress?.street, successOrder.shippingAddress?.ward, successOrder.shippingAddress?.district, successOrder.shippingAddress?.city].filter(Boolean).join(', ')}
                     </p>
                   </div>
 
-                  <div className="bg-slate-50/80 dark:bg-slate-800/40 p-3.5 rounded-xl border border-slate-200/60 dark:border-slate-700/60 space-y-2.5 flex flex-col justify-between">
+                  <div className="bg-slate-50/80 dark:bg-slate-800/40 p-2.5 rounded-xl border border-slate-200/60 dark:border-slate-700/60 space-y-1.5 flex flex-col justify-between">
                     <div>
-                      <span className="font-extrabold uppercase tracking-wider text-slate-400 text-[10px] block mb-1">Thanh toán</span>
-                      <div className="bg-white dark:bg-slate-900 px-3 py-2 rounded-lg border border-slate-200/80 dark:border-slate-700/80 font-bold text-slate-800 dark:text-slate-200 text-xs flex items-center gap-2">
-                        <CreditCard size={14} className="text-primary-500 shrink-0" />
+                      <span className="font-extrabold uppercase tracking-wider text-slate-400 text-[9px] block mb-1">Thanh toán</span>
+                      <div className="bg-white dark:bg-slate-900 px-2.5 py-1.5 rounded-lg border border-slate-200/80 dark:border-slate-700/80 font-bold text-slate-800 dark:text-slate-200 text-[11px] flex items-center gap-1.5">
+                        <CreditCard size={13} className="text-primary-500 shrink-0" />
                         <span className="truncate">
                           {successOrder.paymentMethod === 'cod' ? 'Tiền mặt (COD)' :
                            successOrder.paymentMethod === 'bank_transfer' ? 'Chuyển khoản QR' :
@@ -340,7 +338,7 @@ const Checkout = () => {
                       </div>
                     </div>
                     {successOrder.note && (
-                      <p className="text-[11px] italic text-slate-500 bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200/50">
+                      <p className="text-[10px] italic text-slate-500 bg-white dark:bg-slate-900 p-1.5 rounded-lg border border-slate-200/50">
                         "{successOrder.note}"
                       </p>
                     )}
@@ -351,20 +349,20 @@ const Checkout = () => {
             </div>
 
             {/* Right: Summary & Actions (5 cols) */}
-            <div className="md:col-span-5 space-y-6">
+            <div className="md:col-span-5 space-y-4">
               
               {/* Receipt Summary Card */}
-              <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800/80 shadow-premium relative overflow-hidden space-y-4">
-                <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-primary-600 via-indigo-600 to-emerald-500" />
+              <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-2xl p-3.5 sm:p-4 border border-slate-200/80 dark:border-slate-800/80 shadow-premium relative overflow-hidden space-y-3">
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary-600 via-indigo-600 to-emerald-500" />
                 
-                <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-                  <span className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
-                    <FileText size={16} className="text-amber-500" /> Tổng Kết Hóa Đơn
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+                  <span className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <FileText size={15} className="text-amber-500" /> Tổng Kết Hóa Đơn
                   </span>
-                  <span className="font-mono text-xs font-bold text-slate-400">#{orderCode}</span>
+                  <span className="font-mono text-[11px] font-bold text-slate-400">#{orderCode}</span>
                 </div>
 
-                <div className="space-y-2.5 text-xs">
+                <div className="space-y-1.5 text-xs">
                   <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
                     <span>Tạm tính:</span>
                     <span className="font-bold text-slate-900 dark:text-white">{formatPrice(itemsSubtotal)}</span>
@@ -377,11 +375,11 @@ const Checkout = () => {
                   </div>
 
                   {successOrder.appliedVouchers && successOrder.appliedVouchers.length > 0 && (
-                    <div className="pt-1 space-y-1">
+                    <div className="pt-0.5 space-y-1">
                       {successOrder.appliedVouchers.map((v, idx) => (
-                        <div key={idx} className="flex justify-between items-center text-[11px] bg-primary-500/5 px-2.5 py-1.5 rounded-lg border border-primary-500/15">
+                        <div key={idx} className="flex justify-between items-center text-[10px] bg-primary-500/5 px-2 py-1 rounded border border-primary-500/15">
                           <span className="font-bold text-primary-600 dark:text-primary-400 flex items-center gap-1">
-                            <Gift size={12} /> {v.code}
+                            <Gift size={11} /> {v.code}
                           </span>
                           <span className="font-bold text-emerald-600">-{formatPrice(v.discountAmount)}</span>
                         </div>
@@ -398,52 +396,53 @@ const Checkout = () => {
                 </div>
 
                 {/* Dashed line */}
-                <div className="border-t border-dashed border-slate-200 dark:border-slate-800 my-2" />
+                <div className="border-t border-dashed border-slate-200 dark:border-slate-800 my-1.5" />
 
                 {/* Total Amount */}
-                <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200/60 dark:border-slate-700/60 text-center space-y-0.5">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-xl border border-slate-200/60 dark:border-slate-700/60 text-center space-y-0.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
                     Tổng Thanh Toán
                   </span>
-                  <div className="text-2xl font-black bg-gradient-to-r from-red-600 via-rose-500 to-amber-500 dark:from-red-400 dark:via-rose-400 dark:to-amber-400 bg-clip-text text-transparent">
+                  <div className="text-xl sm:text-2xl font-black bg-gradient-to-r from-red-600 via-rose-500 to-amber-500 dark:from-red-400 dark:via-rose-400 dark:to-amber-400 bg-clip-text text-transparent">
                     {formatPrice(successOrder.totalAmount)}
                   </div>
-                  <p className="text-[10px] text-slate-400">(Đã bao gồm VAT & Miễn phí Giao 2H)</p>
+                  <p className="text-[9px] text-slate-400">(Đã bao gồm VAT & Miễn phí Giao 2H)</p>
                 </div>
 
                 {/* Actions */}
-                <div className="space-y-2.5 pt-1">
+                <div className="grid grid-cols-2 gap-2 pt-0.5">
                   <Link
                     to="/profile?tab=orders"
-                    className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-700 hover:to-indigo-700 text-white font-extrabold text-xs shadow-lg shadow-primary-500/25 hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2"
+                    className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-700 hover:to-indigo-700 text-white font-extrabold text-xs shadow-md shadow-primary-500/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-1.5 text-center"
                   >
-                    <FileText size={16} /> 
-                    <span>Theo Dõi Đơn Hàng</span>
-                    <ArrowRight size={14} />
+                    <FileText size={14} className="shrink-0" /> 
+                    <span className="truncate">Theo Dõi Đơn</span>
                   </Link>
                   <Link
                     to="/shop"
-                    className="w-full py-3 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-extrabold text-xs border border-slate-200 dark:border-slate-700 transition-all hover:scale-[1.01] active:scale-95 flex items-center justify-center gap-2"
+                    className="py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-extrabold text-xs border border-slate-200 dark:border-slate-700 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-1.5 text-center"
                   >
-                    <Sparkles size={16} className="text-amber-500" />
-                    <span>Tiếp Tục Mua Sắm</span>
+                    <Sparkles size={14} className="text-amber-500 shrink-0" />
+                    <span className="truncate">Mua Sắm Tiếp</span>
                   </Link>
                 </div>
               </div>
 
-              {/* Trust Badges */}
-              <div className="grid grid-cols-3 gap-2">
-                <div className="bg-white/80 dark:bg-slate-900/80 p-3 rounded-xl border border-slate-200/70 dark:border-slate-800/70 text-center space-y-1">
-                  <ShieldCheck className="w-5 h-5 text-emerald-500 mx-auto" />
-                  <p className="text-[11px] font-extrabold text-slate-800 dark:text-slate-200">Bảo Hành 24T</p>
+              {/* Compact Trust Badges Bar */}
+              <div className="bg-white/80 dark:bg-slate-900/80 px-3 py-2 rounded-xl border border-slate-200/70 dark:border-slate-800/70 flex items-center justify-around text-[11px] font-extrabold text-slate-700 dark:text-slate-300">
+                <div className="flex items-center gap-1">
+                  <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                  <span>Bảo Hành 24T</span>
                 </div>
-                <div className="bg-white/80 dark:bg-slate-900/80 p-3 rounded-xl border border-slate-200/70 dark:border-slate-800/70 text-center space-y-1">
-                  <Truck className="w-5 h-5 text-primary-500 mx-auto" />
-                  <p className="text-[11px] font-extrabold text-slate-800 dark:text-slate-200">Giao Hỏa Tốc</p>
+                <div className="w-px h-3 bg-slate-200 dark:bg-slate-700" />
+                <div className="flex items-center gap-1">
+                  <Truck className="w-4 h-4 text-primary-500" />
+                  <span>Giao Hỏa Tốc</span>
                 </div>
-                <div className="bg-white/80 dark:bg-slate-900/80 p-3 rounded-xl border border-slate-200/70 dark:border-slate-800/70 text-center space-y-1">
-                  <HeartHandshake className="w-5 h-5 text-rose-500 mx-auto" />
-                  <p className="text-[11px] font-extrabold text-slate-800 dark:text-slate-200">Đổi Trả 30N</p>
+                <div className="w-px h-3 bg-slate-200 dark:bg-slate-700" />
+                <div className="flex items-center gap-1">
+                  <HeartHandshake className="w-4 h-4 text-rose-500" />
+                  <span>Đổi Trả 30N</span>
                 </div>
               </div>
 

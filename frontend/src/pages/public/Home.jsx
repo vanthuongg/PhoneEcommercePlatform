@@ -8,7 +8,8 @@ import {
   ArrowRight, Star, Truck, RefreshCw, ChevronLeft, ChevronRight,
   Sparkles, Zap, Flame, Headphones, ShieldCheck, Award,
   Smartphone, Watch, BatteryCharging, Shield, Tablet, ArrowRightLeft, Gift, Scale, Check,
-  Mail, Send, Bell, Tag, Copy, Percent, Clock, CheckCircle2, ShoppingBag, Store
+  Mail, Send, Bell, Tag, Copy, Percent, Clock, CheckCircle2, ShoppingBag, Store,
+  Layers, Compass, Crown, Cpu, Camera, Gamepad2, Briefcase, Battery, Trophy, HeartHandshake
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -113,9 +114,8 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [heroSlide, setHeroSlide] = useState(0);
 
-  // Newsletter state
-  const [email, setEmail] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
+  // Tech Experience state
+  const [activeTab, setActiveTab] = useState('ecosystem'); // 'ecosystem', 'advisor'
 
   /* Countdown cho Flash Sale – tính tới cuối ngày hôm nay */
   const getEndOfDay = () => {
@@ -137,7 +137,7 @@ const Home = () => {
       subtitle: 'iPhone 16 Pro Max 512GB Titan Tự Nhiên',
       desc: 'Thiết kế Titan hàng không vũ trụ siêu nhẹ, chip Apple A18 Pro đỉnh cao công nghệ với nút điều khiển Camera Control đột phá.',
       price: 34990000,
-      bg: 'bg-gradient-to-br from-primary-900 via-primary-800 to-slate-900 dark:from-slate-950 dark:via-primary-950 dark:to-slate-900 border border-primary-700/50',
+      bg: 'bg-gradient-to-br from-slate-900 via-primary-900 to-slate-950 border border-primary-700/50',
       accent: 'text-accent-400',
       image: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600&auto=format&fit=crop&q=80',
       link: '/shop?brand=Apple',
@@ -147,7 +147,7 @@ const Home = () => {
       subtitle: 'Samsung Galaxy S26 Ultra AI 5G',
       desc: 'Kỷ nguyên quyền năng Galaxy AI thế hệ mới. Khung Titan nguyên khối, camera 200MP siêu zoom mắt thần bóng đêm.',
       price: 31990000,
-      bg: 'bg-gradient-to-br from-primary-850 via-slate-900 to-primary-900 dark:from-slate-950 dark:via-slate-900 dark:to-primary-950 border border-primary-700/50',
+      bg: 'bg-gradient-to-br from-primary-950 via-slate-900 to-primary-900 border border-primary-700/50',
       accent: 'text-accent-400',
       image: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=600&auto=format&fit=crop&q=80',
       link: '/shop?brand=Samsung',
@@ -157,7 +157,7 @@ const Home = () => {
       subtitle: 'Xiaomi 15 Ultra Photography Kit',
       desc: 'Cảm biến 1 inch Sony LYT-900 thế hệ mới, thấu kính quang học Leica siêu sáng, sạc siêu tốc HyperCharge 120W.',
       price: 27990000,
-      bg: 'bg-gradient-to-br from-slate-900 via-primary-900 to-slate-850 dark:from-slate-950 dark:via-primary-950 dark:to-slate-900 border border-primary-700/50',
+      bg: 'bg-gradient-to-br from-slate-950 via-primary-950 to-slate-900 border border-primary-700/50',
       accent: 'text-accent-400',
       image: 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=600&auto=format&fit=crop&q=80',
       link: '/shop?brand=Xiaomi',
@@ -239,17 +239,6 @@ const Home = () => {
     });
   };
 
-  const handleSubscribe = (e) => {
-    e.preventDefault();
-    if (!email || !email.includes('@')) {
-      toast.error('Vui lòng nhập email hợp lệ!');
-      return;
-    }
-    setSubscribed(true);
-    toast.success('🎉 Chúc mừng! Bạn đã đăng ký nhận thông tin và mã ưu đãi 100K thành công.');
-    setEmail('');
-  };
-
   /* ─────────── JSX ─────────── */
   return (
     <div className="pb-10 bg-slate-50 dark:bg-slate-950 min-h-screen relative overflow-hidden transition-colors">
@@ -264,7 +253,7 @@ const Home = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
           {/* Cột lớn: Banner chính (2/3 width) - Teal & Gold Theme */}
-          <div className={`lg:col-span-2 relative rounded-3xl overflow-hidden shadow-xl min-h-[400px] lg:min-h-[460px] flex items-center ${slide.bg} group transition-all duration-500`}>
+          <div className={`lg:col-span-2 relative rounded-3xl overflow-hidden shadow-xl min-h-[400px] lg:min-h-[460px] flex items-center bg-slate-950 ${slide.bg} group transition-all duration-500`}>
             
             {/* Ambient glowing effect inside slide */}
             <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary-500/20 rounded-full blur-3xl pointer-events-none group-hover:bg-primary-500/30 transition-all duration-700" />
@@ -667,78 +656,232 @@ const Home = () => {
       </section>
 
       {/* ════════════════════════════════
-          8. REDESIGNED NEWSLETTER & NEW TECH LAUNCH SECTION (Brand Teal & Gold Theme)
+          8. KHÔNG GIAN TRẢI NGHIỆM & GỢI Ý CÔNG NGHỆ ĐỈNH CAO (NEW SECTION)
       ════════════════════════════════ */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 relative z-10">
-        <div className="bg-gradient-to-br from-primary-900 via-primary-800 to-slate-900 dark:from-primary-950 dark:via-slate-900 dark:to-primary-900 border border-primary-700/50 rounded-3xl p-8 sm:p-12 shadow-2xl relative overflow-hidden group">
-          
-          {/* Animated background glow */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-accent-500/15 rounded-full blur-3xl pointer-events-none group-hover:bg-accent-500/25 transition-all duration-700" />
-          <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary-400/15 rounded-full blur-3xl pointer-events-none" />
-
-          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            
-            {/* Left Info Column */}
-            <div className="lg:col-span-7 space-y-4 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md text-accent-300 text-xs font-bold uppercase tracking-wider border border-white/15 shadow-sm">
-                <Sparkles size={14} className="text-accent-400 animate-spin-slow" /> Nhận Mã Ưu Đãi 100K & Đặc Quyền VIP
-              </div>
-              
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white leading-tight font-display tracking-tight">
-                Đăng ký nhận thông tin khuyến mãi<br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-300 via-white to-primary-200">& ra mắt công nghệ mới</span>
-              </h2>
-              
-              <p className="text-sm sm:text-base text-slate-200 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                Là người đầu tiên cập nhật thông tin mở bán iPhone 17, Samsung Galaxy AI thế hệ mới cùng cơ hội nhận deal giảm giá độc quyền hàng tuần.
-              </p>
-
-              {/* Trust checklist */}
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 sm:gap-6 pt-2 text-xs font-semibold text-slate-200">
-                <span className="flex items-center gap-1.5"><CheckCircle2 size={16} className="text-accent-400 shrink-0" /> Không spam thư rác</span>
-                <span className="flex items-center gap-1.5"><CheckCircle2 size={16} className="text-accent-400 shrink-0" /> Nhận voucher 100K ngay</span>
-                <span className="flex items-center gap-1.5"><CheckCircle2 size={16} className="text-accent-400 shrink-0" /> Hủy đăng ký bất kỳ lúc nào</span>
-              </div>
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-14 relative z-10">
+        {/* Header & Interactive Tab Bar */}
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-8">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-500/10 dark:bg-primary-500/20 text-primary-700 dark:text-primary-300 text-xs font-bold uppercase tracking-wider border border-primary-500/20 shadow-xs">
+              <Sparkles size={14} className="text-primary-600 dark:text-primary-400 animate-spin-slow" /> Khám Phá Xu Hướng Công Nghệ
             </div>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight font-display">
+              Không Gian Trải Nghiệm & Gợi Ý Lên Đời
+            </h2>
+            <p className="text-sm text-slate-600 dark:text-slate-400 max-w-2xl font-normal">
+              Chạm để khám phá hệ sinh thái công nghệ tương lai, các dòng flagship mới nhất và lựa chọn smartphone chuẩn gu cho bạn.
+            </p>
+          </div>
 
-            {/* Right Form Column */}
-            <div className="lg:col-span-5">
-              <div className="bg-white/10 dark:bg-slate-900/80 backdrop-blur-xl p-6 sm:p-8 rounded-2xl border border-white/15 shadow-xl">
-                <h3 className="text-base font-bold text-white mb-3 text-center sm:text-left flex items-center justify-center sm:justify-start gap-2">
-                  <Mail className="text-accent-400 w-5 h-5" /> Đăng ký thành viên sớm
-                </h3>
-                
-                <form onSubmit={handleSubscribe} className="space-y-3">
-                  <div className="relative">
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Nhập địa chỉ email của bạn..."
-                      required
-                      className="w-full px-5 py-3.5 rounded-xl bg-slate-950/90 border border-slate-700 text-white placeholder-slate-400 text-sm focus:outline-none focus:border-accent-400 focus:ring-2 focus:ring-accent-400/20 transition-all"
-                    />
-                  </div>
-                  
-                  <button
-                    type="submit"
-                    className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-accent-500 to-amber-500 hover:from-accent-400 hover:to-amber-400 text-slate-950 font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-accent-500/25 active:scale-98"
-                  >
-                    <span>Đăng Ký Nhận Quà Ngay</span>
-                    <Send size={16} />
-                  </button>
-                </form>
-
-                {subscribed && (
-                  <p className="mt-3 text-xs text-accent-300 font-semibold text-center bg-accent-500/10 py-2 rounded-lg border border-accent-500/20">
-                    ✨ Cảm ơn bạn đã đồng hành cùng TechPhone!
-                  </p>
-                )}
-              </div>
-            </div>
-
+          {/* Interactive Tabs */}
+          <div className="flex flex-wrap items-center gap-2 bg-slate-200/60 dark:bg-slate-900/80 p-1.5 rounded-2xl border border-slate-300/50 dark:border-slate-800 backdrop-blur-md self-start lg:self-auto">
+            <button
+              type="button"
+              onClick={() => setActiveTab('ecosystem')}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 ${
+                activeTab === 'ecosystem'
+                  ? 'bg-gradient-to-r from-primary-600 to-primary-500 text-white shadow-md shadow-primary-500/20 scale-102'
+                  : 'text-slate-700 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-white/60 dark:hover:bg-slate-800/60'
+              }`}
+            >
+              <Layers size={16} />
+              <span>Hệ Sinh Thái AI</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('advisor')}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 ${
+                activeTab === 'advisor'
+                  ? 'bg-gradient-to-r from-primary-600 to-primary-500 text-white shadow-md shadow-primary-500/20 scale-102'
+                  : 'text-slate-700 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-white/60 dark:hover:bg-slate-800/60'
+              }`}
+            >
+              <Compass size={16} />
+              <span>Chọn Máy Chuẩn Gu</span>
+            </button>
           </div>
         </div>
+
+        {/* Tab 1: Hệ Sinh Thái AI & Flagship */}
+        {activeTab === 'ecosystem' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fadeIn">
+            {/* Card 1 */}
+            <div className="lg:col-span-1 bg-gradient-to-br from-slate-900 via-primary-950 to-slate-900 border border-primary-500/40 rounded-3xl p-6 sm:p-8 flex flex-col justify-between shadow-xl relative overflow-hidden group hover:-translate-y-1.5 transition-all duration-300">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/15 rounded-full blur-3xl pointer-events-none group-hover:bg-primary-500/25 transition-all duration-500" />
+              <div className="relative z-10 space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="px-3 py-1 rounded-full bg-white/10 text-accent-300 text-[10px] font-bold uppercase tracking-wider border border-white/15">
+                    Apple Intelligence
+                  </span>
+                  <Cpu className="text-accent-400 w-6 h-6 animate-pulse" />
+                </div>
+                <h3 className="text-xl sm:text-2xl font-black text-white font-display tracking-tight leading-snug">
+                  Kỷ Nguyên iPhone 16 Pro — Sức Mạnh Vượt Giới Hạn
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
+                  Trải nghiệm nút Camera Control đột phá, chip A18 Pro siêu việt và các tính năng AI tự động tóm tắt, chỉnh sửa văn bản đẳng cấp.
+                </p>
+                <div className="flex flex-wrap gap-2 pt-2">
+                  <span className="px-2.5 py-1 rounded-lg bg-white/10 text-white text-xs font-semibold">Chip A18 Pro 3nm</span>
+                  <span className="px-2.5 py-1 rounded-lg bg-white/10 text-white text-xs font-semibold">Khung Titan</span>
+                  <span className="px-2.5 py-1 rounded-lg bg-white/10 text-white text-xs font-semibold">Camera 48MP</span>
+                </div>
+              </div>
+              <div className="relative z-10 pt-6 mt-6 border-t border-white/10 flex items-center justify-between">
+                <span className="text-xs font-mono text-slate-400">Từ 28.990.000đ</span>
+                <Link to="/shop?brand=Apple" className="inline-flex items-center gap-1.5 text-xs font-bold text-accent-300 hover:text-white transition-colors group/btn">
+                  <span>Khám phá Apple</span> <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Card 2 */}
+            <div className="lg:col-span-1 bg-gradient-to-br from-primary-900 via-teal-950 to-slate-900 border border-teal-500/40 rounded-3xl p-6 sm:p-8 flex flex-col justify-between shadow-xl relative overflow-hidden group hover:-translate-y-1.5 transition-all duration-300">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/15 rounded-full blur-3xl pointer-events-none group-hover:bg-teal-500/25 transition-all duration-500" />
+              <div className="relative z-10 space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="px-3 py-1 rounded-full bg-white/10 text-teal-300 text-[10px] font-bold uppercase tracking-wider border border-white/15">
+                    Quyền Năng Galaxy AI
+                  </span>
+                  <Sparkles className="text-teal-400 w-6 h-6 animate-bounce-slow" />
+                </div>
+                <h3 className="text-xl sm:text-2xl font-black text-white font-display tracking-tight leading-snug">
+                  Galaxy S26 Series — Đỉnh Cao Trợ Lý Thông Minh
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
+                  Khoanh vùng tìm kiếm đa năng Circle to Search, dịch thuật cuộc gọi trực tiếp 24 ngôn ngữ và chỉnh sửa ảnh Generative AI tuyệt mỹ.
+                </p>
+                <div className="flex flex-wrap gap-2 pt-2">
+                  <span className="px-2.5 py-1 rounded-lg bg-white/10 text-white text-xs font-semibold">Snapdragon 8 Gen 4</span>
+                  <span className="px-2.5 py-1 rounded-lg bg-white/10 text-white text-xs font-semibold">Zoom 100x</span>
+                  <span className="px-2.5 py-1 rounded-lg bg-white/10 text-white text-xs font-semibold">Bút S-Pen AI</span>
+                </div>
+              </div>
+              <div className="relative z-10 pt-6 mt-6 border-t border-white/10 flex items-center justify-between">
+                <span className="text-xs font-mono text-slate-400">Từ 26.990.000đ</span>
+                <Link to="/shop?brand=Samsung" className="inline-flex items-center gap-1.5 text-xs font-bold text-teal-300 hover:text-white transition-colors group/btn">
+                  <span>Khám phá Samsung</span> <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Card 3 */}
+            <div className="lg:col-span-1 bg-gradient-to-br from-amber-950/80 via-slate-900 to-slate-900 border border-amber-500/40 rounded-3xl p-6 sm:p-8 flex flex-col justify-between shadow-xl relative overflow-hidden group hover:-translate-y-1.5 transition-all duration-300">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/15 rounded-full blur-3xl pointer-events-none group-hover:bg-amber-500/25 transition-all duration-500" />
+              <div className="relative z-10 space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="px-3 py-1 rounded-full bg-white/10 text-amber-300 text-[10px] font-bold uppercase tracking-wider border border-white/15">
+                    Nhiếp Ảnh Studio
+                  </span>
+                  <Camera className="text-amber-400 w-6 h-6" />
+                </div>
+                <h3 className="text-xl sm:text-2xl font-black text-white font-display tracking-tight leading-snug">
+                  Thấu Kính Leica & Zeiss — Nghệ Thuật Quang Học
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
+                  Cảm biến 1 inch Sony siêu sáng, thấu kính chiết suất cao chuẩn studio giúp bắt trọn từng khoảnh khắc chân dung sống động nhất.
+                </p>
+                <div className="flex flex-wrap gap-2 pt-2">
+                  <span className="px-2.5 py-1 rounded-lg bg-white/10 text-white text-xs font-semibold">Cảm biến 1 inch</span>
+                  <span className="px-2.5 py-1 rounded-lg bg-white/10 text-white text-xs font-semibold">Leica Optics</span>
+                  <span className="px-2.5 py-1 rounded-lg bg-white/10 text-white text-xs font-semibold">Quay phim 8K</span>
+                </div>
+              </div>
+              <div className="relative z-10 pt-6 mt-6 border-t border-white/10 flex items-center justify-between">
+                <span className="text-xs font-mono text-slate-400">Từ 19.990.000đ</span>
+                <Link to="/shop?minPrice=15000000" className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-300 hover:text-white transition-colors group/btn">
+                  <span>Xem Flagship</span> <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 2: Chọn Máy Chuẩn Gu (Smart Advisor) */}
+        {activeTab === 'advisor' && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 animate-fadeIn">
+            {[
+              {
+                icon: Gamepad2,
+                title: 'Gaming & Hiệu Năng Cao',
+                desc: 'Dành cho game thủ & livestream. Cấu hình cực mạnh, tản nhiệt buồng hơi lớn, màn hình 144Hz siêu mượt.',
+                specs: ['Chip Snapdragon 8 Gen 4', 'RAM 12GB - 16GB', 'Tản nhiệt buồng hơi'],
+                link: '/shop?sort=-price',
+                color: 'text-purple-500 dark:text-purple-400',
+                bg: 'bg-purple-500/10',
+                border: 'hover:border-purple-500/50',
+                btnText: 'Xem máy Gaming'
+              },
+              {
+                icon: Camera,
+                title: 'Content Creator & Vlog',
+                desc: 'Dành cho tín đồ quay chụp. Camera độ phân giải cao, chống rung quang học OIS, quay phim 4K/8K chuẩn điện ảnh.',
+                specs: ['Camera Zoom 100x', 'Chống rung OIS', 'Dung lượng 256GB - 1TB'],
+                link: '/shop?minPrice=15000000',
+                color: 'text-rose-500 dark:text-rose-400',
+                bg: 'bg-rose-500/10',
+                border: 'hover:border-rose-500/50',
+                btnText: 'Xem máy Camera'
+              },
+              {
+                icon: Battery,
+                title: 'Pin Khủng & Sạc Siêu Tốc',
+                desc: 'Dành cho người bận rộn di chuyển nhiều. Viên pin thỏi siêu trâu, sạc nhanh 120W làm đầy pin chỉ trong 15 phút.',
+                specs: ['Pin 5500mAh - 6500mAh', 'Sạc siêu tốc 120W', 'Tiết kiệm pin AI'],
+                link: '/shop?maxPrice=10000000',
+                color: 'text-emerald-500 dark:text-emerald-400',
+                bg: 'bg-emerald-500/10',
+                border: 'hover:border-emerald-500/50',
+                btnText: 'Xem máy Pin Trâu'
+              },
+              {
+                icon: Briefcase,
+                title: 'Doanh Nhân & Màn Gập',
+                desc: 'Dành cho doanh nhân thành đạt. Thiết kế gập mở thời thượng, bảo mật tuyệt đối, hỗ trợ đa nhiệm làm việc đỉnh cao.',
+                specs: ['Màn hình gập OLED', 'Bảo mật Knox / FaceID', 'Đa nhiệm 3 ứng dụng'],
+                link: '/shop?brand=Samsung',
+                color: 'text-amber-500 dark:text-amber-400',
+                bg: 'bg-amber-500/10',
+                border: 'hover:border-amber-500/50',
+                btnText: 'Xem máy Doanh Nhân'
+              }
+            ].map((item, idx) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={idx}
+                  to={item.link}
+                  className={`bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-6 flex flex-col justify-between shadow-sm hover:shadow-xl transition-all duration-300 group hover:-translate-y-1.5 ${item.border}`}
+                >
+                  <div>
+                    <div className={`w-14 h-14 rounded-2xl ${item.bg} ${item.color} flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300 shadow-xs`}>
+                      <Icon size={28} />
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                      {item.title}
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
+                      {item.desc}
+                    </p>
+                    <div className="space-y-1.5 pt-3 border-t border-slate-100 dark:border-slate-800/80 mb-6">
+                      {item.specs.map((spec, sIdx) => (
+                        <div key={sIdx} className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300">
+                          <CheckCircle2 size={13} className={item.color} />
+                          <span>{spec}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="inline-flex items-center justify-between text-xs font-bold text-primary-600 dark:text-primary-400 pt-3 border-t border-slate-100 dark:border-slate-800/80 group-hover:text-primary-700 dark:group-hover:text-primary-300">
+                    <span>{item.btnText}</span>
+                    <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+
       </section>
 
       {/* ════════════════════════════════

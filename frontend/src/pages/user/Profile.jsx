@@ -5,7 +5,7 @@ import { useWishlist } from "../../contexts/WishlistContext";
 import { userAPI, authAPI, orderAPI } from "../../services/api";
 import ProductCard from "../../components/product/ProductCard";
 import Breadcrumb from "../../components/ui/Breadcrumb";
-import { User, Lock, Save, Loader2, Package, Heart, ChevronRight, LogOut, Trash2, Bell, Ticket, MessageSquare, Star } from "lucide-react";
+import { User, Lock, Save, Loader2, Package, Heart, ChevronRight, LogOut, Trash2, Bell, Ticket, MessageSquare, Star, Clock, CheckCircle, Truck, XCircle, ShoppingBag, ArrowRight, CreditCard } from "lucide-react";
 import toast from "react-hot-toast";
 
 import NotificationList from "../../components/profile/NotificationList";
@@ -14,6 +14,15 @@ import UserReviews from "../../components/profile/UserReviews";
 
 const formatPrice = (price) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
+
+const statusConfig = {
+  pending: { label: '⏳ Chờ xác nhận', color: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/60' },
+  confirmed: { label: '✓ Đã xác nhận', color: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800/60' },
+  processing: { label: '📦 Đang đóng gói', color: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-800/60' },
+  shipping: { label: '🚚 Đang giao hàng', color: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800/60' },
+  delivered: { label: '🎉 Giao thành công', color: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/60' },
+  cancelled: { label: '❌ Đã hủy đơn', color: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-800/60' },
+};
 
 const Profile = () => {
   const { user, logout, updateUser } = useAuth();
@@ -334,55 +343,143 @@ const Profile = () => {
 
             {activeTab === "orders" && (
               <div className="space-y-6 animate-fade-in">
-                <div className="pb-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+                <div className="pb-4 border-b border-slate-100 dark:border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
-                    <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Đơn Hàng Gần Đây</h2>
-                    <p className="text-xs text-slate-500 font-medium mt-0.5">Danh sách các đơn đặt hàng mới nhất của bạn</p>
+                    <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight font-display flex items-center gap-2">
+                      <ShoppingBag className="w-6 h-6 text-primary-600 dark:text-primary-400" />
+                      <span>Đơn Hàng Gần Đây</span>
+                    </h2>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">Theo dõi lịch sử mua sắm, trạng thái vận chuyển và chi tiết các đơn đặt hàng mới nhất</p>
                   </div>
-                  <Link to="/orders" className="text-xs font-bold text-primary-600 dark:text-primary-400 hover:underline flex items-center gap-1 group">
-                    <span>Xem toàn bộ</span> <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                  <Link
+                    to="/orders"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 font-bold text-xs hover:bg-primary-100 dark:hover:bg-primary-900/50 transition-all shadow-xs border border-primary-100 dark:border-primary-800/60 self-start sm:self-auto group"
+                  >
+                    <span>Xem toàn bộ lịch sử ({orders.length})</span>
+                    <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                   </Link>
                 </div>
+
                 {loadingOrders ? (
-                  <div className="space-y-3.5">
+                  <div className="space-y-4">
                     {[...Array(3)].map((_, i) => (
-                      <div key={i} className="h-24 bg-slate-100 dark:bg-slate-800/60 rounded-2xl animate-pulse" />
+                      <div key={i} className="h-36 bg-slate-100 dark:bg-slate-800/60 rounded-3xl animate-pulse" />
                     ))}
                   </div>
                 ) : orders.length === 0 ? (
-                  <div className="text-center py-14 space-y-4 animate-fade-in">
-                    <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800/80 rounded-3xl flex items-center justify-center mx-auto text-slate-400 shadow-inner">
-                      <Package size={36} className="animate-bounce-subtle" />
+                  <div className="text-center py-16 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-8 shadow-sm space-y-4 animate-fade-in">
+                    <div className="w-20 h-20 bg-primary-50 dark:bg-primary-900/30 rounded-3xl flex items-center justify-center mx-auto text-primary-600 dark:text-primary-400 shadow-inner">
+                      <Package size={40} className="animate-bounce-slow" />
                     </div>
-                    <p className="font-bold text-slate-600 dark:text-slate-400">Bạn chưa có đơn hàng mua sắm nào</p>
-                    <Link to="/shop" className="btn-primary inline-flex items-center gap-2 text-xs px-6 py-3">
+                    <div className="space-y-1">
+                      <h3 className="font-black text-base text-slate-900 dark:text-white">Bạn chưa có đơn hàng mua sắm nào</h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">Khám phá ngay hàng trăm công nghệ siêu phẩm, smartphone flagship với nhiều ưu đãi giảm giá đang chờ bạn!</p>
+                    </div>
+                    <Link to="/shop" className="btn-primary inline-flex items-center gap-2 text-xs font-bold px-6 py-3.5 shadow-lg shadow-primary-500/20 active:scale-95">
+                      <ShoppingBag size={16} />
                       <span>Sắm Siêu Phẩm Ngay</span>
                     </Link>
                   </div>
                 ) : (
-                  <div className="space-y-3.5">
-                    {orders.map((o, index) => (
-                      <Link
-                        key={o._id}
-                        to={`/orders/${o._id}`}
-                        style={{ animationDelay: `${index * 50}ms` }}
-                        className="block p-4.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 hover:border-primary-500/60 dark:hover:border-primary-500/60 hover:shadow-md transition-all duration-300 group animate-fade-in hover:-translate-y-0.5"
-                      >
-                        <div className="flex items-center justify-between mb-2.5">
-                          <span className="font-mono font-bold text-xs text-primary-600 dark:text-primary-400 flex items-center gap-1.5">
-                            <Package className="w-4 h-4" />
-                            #{o.orderCode || o._id.slice(-6).toUpperCase()}
-                          </span>
-                          <span className="text-[11px] font-extrabold px-3 py-1 rounded-full bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300 uppercase tracking-wider shadow-sm">
-                            {o.orderStatus}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 font-medium pt-2 border-t border-slate-200/50 dark:border-slate-700/50">
-                          <span>Gồm <strong className="text-slate-900 dark:text-white">{o.items?.length || 1}</strong> sản phẩm</span>
-                          <span className="font-black text-sm text-red-600 dark:text-red-400">{formatPrice(o.totalAmount)}</span>
-                        </div>
-                      </Link>
-                    ))}
+                  <div className="space-y-4">
+                    {orders.map((o, index) => {
+                      const orderCode = o.orderCode || o._id?.slice(-6).toUpperCase() || "N/A";
+                      const statusInfo = statusConfig[o.orderStatus] || { label: o.orderStatus, color: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200" };
+                      const orderDate = o.createdAt ? new Date(o.createdAt).toLocaleDateString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit", year: "numeric" }) : "Vừa xong";
+                      const payMethod = o.paymentMethod === "vnpay" ? "VNPay QR" : o.paymentMethod === "banking" ? "Chuyển khoản QR" : "Tiền mặt (COD)";
+                      const firstItem = o.items?.[0];
+                      const otherCount = (o.items?.length || 1) - 1;
+
+                      return (
+                        <Link
+                          key={o._id}
+                          to={`/orders/${o._id}`}
+                          style={{ animationDelay: `${index * 60}ms` }}
+                          className="block bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-5 sm:p-6 shadow-sm hover:shadow-xl hover:border-primary-500/50 dark:hover:border-primary-500/50 transition-all duration-300 group animate-fade-in hover:-translate-y-1 relative overflow-hidden"
+                        >
+                          {/* Top Header of Card */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800/80">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-2xl bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 flex items-center justify-center font-black shrink-0 group-hover:scale-110 transition-transform shadow-xs">
+                                <Package size={20} />
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-mono font-black text-sm text-slate-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                                    #{orderCode}
+                                  </span>
+                                  <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold">
+                                    {o.items?.length || 1} món
+                                  </span>
+                                </div>
+                                <span className="text-[11px] text-slate-400 font-medium flex items-center gap-1 mt-0.5">
+                                  <Clock size={11} /> {orderDate}
+                                </span>
+                              </div>
+                            </div>
+
+                            <span className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-extrabold border shadow-2xs self-start sm:self-auto ${statusInfo.color}`}>
+                              <span>{statusInfo.label}</span>
+                            </span>
+                          </div>
+
+                          {/* Middle: Product Preview */}
+                          <div className="py-4 flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                              {firstItem ? (
+                                <>
+                                  <img
+                                    src={firstItem.image || firstItem.product?.images?.[0] || "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=100&auto=format&fit=crop&q=80"}
+                                    alt=""
+                                    className="w-14 h-14 rounded-2xl object-cover bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shrink-0 shadow-xs group-hover:scale-105 transition-transform"
+                                  />
+                                  <div className="min-w-0 flex-1">
+                                    <p className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors truncate">
+                                      {firstItem.name || firstItem.product?.name || "Sản phẩm công nghệ"}
+                                    </p>
+                                    <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5 flex items-center gap-2 flex-wrap">
+                                      <span>SL: <strong className="text-slate-700 dark:text-slate-300 font-bold">{firstItem.quantity || 1}</strong></span>
+                                      {firstItem.price && <span>• Giá: <strong className="text-slate-700 dark:text-slate-300 font-bold">{formatPrice(firstItem.price)}</strong></span>}
+                                    </p>
+                                  </div>
+                                </>
+                              ) : (
+                                <div className="text-xs text-slate-500 font-medium italic">Đơn hàng gồm {o.items?.length || 1} sản phẩm</div>
+                              )}
+                            </div>
+
+                            {otherCount > 0 && (
+                              <div className="shrink-0 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[11px] font-extrabold text-slate-600 dark:text-slate-300">
+                                +{otherCount} sp khác
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Footer of Card */}
+                          <div className="pt-3.5 border-t border-slate-100 dark:border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                            <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 font-medium">
+                              <CreditCard size={14} className="text-slate-400" />
+                              <span>Thanh toán: <strong className="text-slate-700 dark:text-slate-300 font-bold">{payMethod}</strong></span>
+                              {(o.paymentStatus === 'paid' || o.isPaid || o.orderStatus === 'delivered') && <span className="text-emerald-600 dark:text-emerald-400 font-bold text-[11px] bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800/60">✓ Đã thanh toán</span>}
+                            </div>
+
+                            <div className="flex items-center justify-between sm:justify-end gap-4">
+                              <div className="text-left sm:text-right">
+                                <span className="text-[10px] text-slate-400 uppercase font-bold block">Tổng thanh toán:</span>
+                                <span className="font-black text-base sm:text-lg text-red-600 dark:text-red-400 leading-none">
+                                  {formatPrice(o.totalAmount)}
+                                </span>
+                              </div>
+
+                              <div className="px-4 py-2 rounded-xl bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 font-extrabold text-xs flex items-center gap-1.5 group-hover:bg-primary-600 group-hover:text-white transition-all shadow-xs shrink-0">
+                                <span>Chi tiết</span>
+                                <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                              </div>
+                            </div>
+                          </div>
+                        </Link>
+                      );
+                    })}
                   </div>
                 )}
               </div>

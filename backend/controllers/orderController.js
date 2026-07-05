@@ -242,15 +242,7 @@ const createOrder = async (req, res) => {
     if (settings.orderConfirmEmail !== false) {
       emailService.sendOrderConfirmationEmail(req.user, order).catch(console.error);
     }
-    if (settings.newOrderNotify !== false) {
-      Notification.create({
-        role: 'admin',
-        title: `🛍️ Đơn hàng mới #${order.orderCode}`,
-        message: `Khách hàng ${req.user.name} vừa đặt đơn hàng trị giá ${totalAmount.toLocaleString()}đ`,
-        type: 'order',
-        link: `/admin/orders`,
-      }).catch(console.error);
-    }
+    // Admin notification for new order removed as requested
 
     // Tạo thông báo cho Khách hàng
     Notification.create({
@@ -407,18 +399,7 @@ const updateOrderStatus = async (req, res) => {
       link: `/orders/${order._id}`,
     });
 
-    if (status === 'cancelled') {
-      const settings = await Setting.findOne() || {};
-      if (settings.orderCancelNotify !== false) {
-        Notification.create({
-          role: 'admin',
-          title: `🚫 Đơn hàng bị hủy #${order.orderCode}`,
-          message: `Đơn hàng #${order.orderCode} vừa chuyển sang trạng thái đã hủy.`,
-          type: 'order',
-          link: `/admin/orders`,
-        }).catch(console.error);
-      }
-    }
+    // Admin notification for cancelled order removed as requested
 
     // Ghi Audit Log
     await createAuditLog({
@@ -539,16 +520,7 @@ const cancelOrder = async (req, res) => {
 
     await order.save();
 
-    const settings = await Setting.findOne() || {};
-    if (settings.orderCancelNotify !== false) {
-      Notification.create({
-        role: 'admin',
-        title: `🚫 Khách hàng hủy đơn #${order.orderCode}`,
-        message: `Khách hàng ${req.user.name} vừa hủy đơn hàng #${order.orderCode}. Lý do: ${cancelReason || 'Không có'}`,
-        type: 'order',
-        link: `/admin/orders`,
-      }).catch(console.error);
-    }
+    // Admin notification for customer cancel removed as requested
 
     Notification.create({
       user: order.user._id || order.user,

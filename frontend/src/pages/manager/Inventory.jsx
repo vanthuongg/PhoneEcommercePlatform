@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { productAPI, categoryAPI, inventoryAPI } from '../../services/api';
+import { productAPI, categoryAPI, inventoryAPI, notificationAPI } from '../../services/api';
 import {
   Package, Search, AlertTriangle, Edit, X, Loader2, History,
   ArrowDownLeft, ArrowUpRight, Plus, Sparkles, Filter, CheckCircle2,
   TrendingUp, TrendingDown, DollarSign, RefreshCw, FileText, Building2,
-  HelpCircle, ArrowRight, Layers
+  HelpCircle, ArrowRight, Layers, Bell, Send
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -36,6 +36,10 @@ const Inventory = () => {
   // Quick adjust modal
   const [editStock, setEditStock] = useState(null); // { product, isVariant, variantsState }
   const [saving, setSaving] = useState(false);
+
+  // Staff Stock Request modal state
+  const [requestModal, setRequestModal] = useState(null);
+  const [submittingRequest, setSubmittingRequest] = useState(false);
 
   // Stock In / Out form state
   const [formType, setFormType] = useState('import'); // 'import' | 'export'
@@ -265,6 +269,56 @@ const Inventory = () => {
     }
   };
 
+  // Handle Staff submitting stock request
+  const handleSendStockRequest = async (e) => {
+    e.preventDefault();
+    if (!requestModal.qty || Number(requestModal.qty) <= 0) {
+      toast.error('Vui lòng nhập số lượng hợp lệ!');
+      return;
+    }
+    setSubmittingRequest(true);
+    try {
+      const p = requestModal.product;
+      const typeLabel = requestModal.type === 'import' ? 'Nhập thêm' : 'Xuất bớt';
+      const priorityLabel = requestModal.priority === 'high' ? '🔴 Khẩn cấp' : requestModal.priority === 'medium' ? '🟡 Trung bình' : '🟢 Bình thường';
+      
+      let variantName = '';
+      if (requestModal.variantId) {
+        const v = p.variants?.find(x => x._id === requestModal.variantId) || p.colors?.find(x => x._id === requestModal.variantId);
+        if (v) {
+          variantName = `${v.color || v.name || ''} ${v.ram || ''} ${v.storage || ''}`.trim();
+        }
+      }
+
+      const title = `📢 [Yêu cầu ${requestModal.type === 'import' ? 'Nhập kho' : 'Xuất kho'}] ${p.name}`;
+      const message = `Nhân viên kho ${user?.name || 'Staff'} đề xuất ${typeLabel} ${requestModal.qty} SP "${p.name}"${variantName ? ` (${variantName})` : ''}.\n• Mức ưu tiên: ${priorityLabel}\n• Lý do: ${requestModal.note || 'Khôi phục cân bằng kho'}`;
+
+      // Gửi cho Admin
+      await notificationAPI.create({
+        title,
+        message,
+        type: 'alert',
+        role: 'admin',
+        link: '/admin/inventory'
+      });
+      // Gửi cho Manager
+      await notificationAPI.create({
+        title,
+        message,
+        type: 'alert',
+        role: 'manager',
+        link: '/manager/inventory'
+      });
+
+      toast.success('🎉 Đã gửi thông báo đề xuất nhập/xuất kho đến Quản lý & Admin thành công!');
+      setRequestModal(null);
+    } catch (err) {
+      toast.error(err.message || 'Gửi thông báo thất bại');
+    } finally {
+      setSubmittingRequest(false);
+    }
+  };
+
   // Quick badge options
   const suppliersList = ['Apple Vietnam', 'Samsung Vina', 'Xiaomi Vietnam', 'Synnex FPT', 'Digiworld', 'Đại lý phân phối Khác'];
   const exportReasonsList = ['Xuất chuyển chi nhánh HCM', 'Xuất chuyển chi nhánh Hà Nội', 'Xuất bán sỉ / Đối tác', 'Xuất bảo hành / Đổi trả', 'Xuất hủy hàng lỗi / hỏng'];
@@ -297,22 +351,26 @@ const Inventory = () => {
             >
               <Package size={16} /> 📦 Tồn Kho
             </button>
-            <button
-              onClick={() => setActiveTab('import')}
-              className={`px-4 py-2.5 rounded-xl font-extrabold text-xs transition-all flex items-center gap-2 ${
-                activeTab === 'import' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 scale-105' : 'text-slate-300 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <ArrowDownLeft size={16} className="text-emerald-400" /> 📥 Nhập Kho
-            </button>
-            <button
-              onClick={() => setActiveTab('export')}
-              className={`px-4 py-2.5 rounded-xl font-extrabold text-xs transition-all flex items-center gap-2 ${
-                activeTab === 'export' ? 'bg-rose-600 text-white shadow-lg shadow-rose-600/30 scale-105' : 'text-slate-300 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <ArrowUpRight size={16} className="text-rose-400" /> 📤 Xuất Kho
-            </button>
+            {(user?.role === 'admin' || user?.role === 'manager') && (
+              <>
+                <button
+                  onClick={() => setActiveTab('import')}
+                  className={`px-4 py-2.5 rounded-xl font-extrabold text-xs transition-all flex items-center gap-2 ${
+                    activeTab === 'import' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 scale-105' : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <ArrowDownLeft size={16} className="text-emerald-400" /> 📥 Nhập Kho
+                </button>
+                <button
+                  onClick={() => setActiveTab('export')}
+                  className={`px-4 py-2.5 rounded-xl font-extrabold text-xs transition-all flex items-center gap-2 ${
+                    activeTab === 'export' ? 'bg-rose-600 text-white shadow-lg shadow-rose-600/30 scale-105' : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <ArrowUpRight size={16} className="text-rose-400" /> 📤 Xuất Kho
+                </button>
+              </>
+            )}
             <button
               onClick={() => setActiveTab('ledger')}
               className={`px-4 py-2.5 rounded-xl font-extrabold text-xs transition-all flex items-center gap-2 ${
@@ -321,6 +379,21 @@ const Inventory = () => {
             >
               <History size={16} /> 📋 Thẻ Kho
             </button>
+            {user?.role === 'staff' && (
+              <button
+                onClick={() => setRequestModal({
+                  product: products[0] || null,
+                  type: 'import',
+                  variantId: '',
+                  qty: '20',
+                  priority: 'high',
+                  note: 'Kho sắp hết hàng, đề xuất bổ sung gấp.'
+                })}
+                className="px-4 py-2.5 rounded-xl font-extrabold text-xs transition-all flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 shadow-lg shadow-amber-500/30 scale-105 animate-pulse"
+              >
+                <Bell size={16} className="text-slate-950 animate-bounce" /> 📢 Báo Nhập / Xuất Kho
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -446,7 +519,7 @@ const Inventory = () => {
                     <th className="pb-3 text-right">Giá Bán</th>
                     <th className="pb-3 text-right">Tổng Giá Trị</th>
                     <th className="pb-3 text-center">Trạng Thái</th>
-                    <th className="pb-3 text-right pr-4">Thao Tác</th>
+                    <th className="pb-3 text-right pr-4">{user?.role === 'staff' ? 'Đề Xuất' : 'Thao Tác'}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60 text-xs font-semibold text-gray-700 dark:text-gray-300">
@@ -505,18 +578,40 @@ const Inventory = () => {
                           )}
                         </td>
                         <td className="py-4 text-right pr-4">
-                          <button
-                            onClick={() => setEditStock({
-                              product: p,
-                              newStock: p.stock,
-                              note: '',
-                              isVariant: hasVariants,
-                              variantsState: p.variants?.length > 0 ? p.variants : p.colors || []
-                            })}
-                            className="px-3 py-1.5 bg-blue-50 dark:bg-blue-950/50 hover:bg-primary text-blue-600 dark:text-blue-300 hover:text-white rounded-xl text-xs font-bold transition-all inline-flex items-center gap-1"
-                          >
-                            <Edit size={14} /> Điều chỉnh
-                          </button>
+                          {(user?.role === 'admin' || user?.role === 'manager') ? (
+                            <button
+                              onClick={() => setEditStock({
+                                product: p,
+                                newStock: p.stock,
+                                note: '',
+                                isVariant: hasVariants,
+                                variantsState: p.variants?.length > 0 ? p.variants : p.colors || []
+                              })}
+                              className="px-3 py-1.5 bg-blue-50 dark:bg-blue-950/50 hover:bg-primary text-blue-600 dark:text-blue-300 hover:text-white rounded-xl text-xs font-bold transition-all inline-flex items-center gap-1"
+                            >
+                              <Edit size={14} /> Điều chỉnh
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => setRequestModal({
+                                product: p,
+                                type: isOut || isLow ? 'import' : 'export',
+                                variantId: (p.variants?.[0]?._id || p.colors?.[0]?._id || ''),
+                                qty: isOut ? '50' : isLow ? '30' : '15',
+                                priority: isOut ? 'high' : isLow ? 'medium' : 'low',
+                                note: isOut ? `Sản phẩm "${p.name}" đã hết sạch hàng trong kho, đề nghị nhập thêm gấp!` : isLow ? `Sản phẩm "${p.name}" sắp hết hàng (chỉ còn ${p.stock}), cần bổ sung.` : `Sản phẩm "${p.name}" đang tồn dư nhiều (${p.stock}), đề xuất kiểm tra xuất bán hoặc điều chuyển.`
+                              })}
+                              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all inline-flex items-center gap-1.5 shadow-sm hover:scale-105 ${
+                                isOut
+                                  ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse shadow-red-500/30'
+                                  : isLow
+                                  ? 'bg-amber-500 hover:bg-amber-600 text-slate-950 shadow-amber-500/30'
+                                  : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
+                              }`}
+                            >
+                              <Bell size={13} className={isOut || isLow ? 'animate-bounce' : ''} /> {isOut || isLow ? 'Báo Nhập Gấp' : 'Báo Xuất/Dư'}
+                            </button>
+                          )}
                         </td>
                       </tr>
                     );
@@ -529,7 +624,7 @@ const Inventory = () => {
       )}
 
       {/* TAB 2 & 3: 📥 NHẬP KHO / 📤 XUẤT KHO (STOCK IN / OUT FORMS) */}
-      {(activeTab === 'import' || activeTab === 'export') && (
+      {(user?.role === 'admin' || user?.role === 'manager') && (activeTab === 'import' || activeTab === 'export') && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Main Transaction Form */}
           <div className="lg:col-span-8 bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-xl p-6 sm:p-8 space-y-6">
@@ -955,7 +1050,7 @@ const Inventory = () => {
       )}
 
       {/* QUICK ADJUST STOCK MODAL */}
-      {editStock && (
+      {(user?.role === 'admin' || user?.role === 'manager') && editStock && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
           <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 sm:p-8 max-w-xl w-full shadow-2xl border border-gray-100 dark:border-gray-800 space-y-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-4">
@@ -1064,6 +1159,178 @@ const Inventory = () => {
                 </div>
               </form>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* STAFF STOCK REQUEST MODAL (Gửi yêu cầu nhập / xuất kho) */}
+      {requestModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 sm:p-8 max-w-xl w-full shadow-2xl border border-gray-100 dark:border-gray-800 space-y-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-amber-500/15 rounded-2xl flex items-center justify-center text-amber-500 font-black">
+                  <Bell size={24} className="animate-bounce" />
+                </div>
+                <div>
+                  <h3 className="font-black text-lg text-gray-900 dark:text-white">📢 Gửi Đề Xuất Nhập / Xuất Kho</h3>
+                  <p className="text-xs text-gray-500">Thông báo trực tiếp đến Quản lý & Quản trị viên</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setRequestModal(null)}
+                className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 hover:text-red-500 transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSendStockRequest} className="space-y-5">
+              {/* Loại yêu cầu */}
+              <div className="space-y-2">
+                <label className="text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300 block">
+                  1. Loại Yêu Cầu Đề Xuất <span className="text-red-500">*</span>
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setRequestModal({ ...requestModal, type: 'import' })}
+                    className={`p-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-2 border transition-all ${
+                      requestModal.type === 'import'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/50 border-emerald-500 text-emerald-600 dark:text-emerald-400 shadow-md'
+                        : 'border-gray-200 dark:border-gray-800 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                    }`}
+                  >
+                    <ArrowDownLeft size={18} /> 📥 Yêu Cầu Nhập Kho (Máy Hết/Sắp Hết)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRequestModal({ ...requestModal, type: 'export' })}
+                    className={`p-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-2 border transition-all ${
+                      requestModal.type === 'export'
+                        ? 'bg-rose-50 dark:bg-rose-950/50 border-rose-500 text-rose-600 dark:text-rose-400 shadow-md'
+                        : 'border-gray-200 dark:border-gray-800 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                    }`}
+                  >
+                    <ArrowUpRight size={18} /> 📤 Yêu Cầu Xuất Kho (Máy Dư/Tồn Lâu)
+                  </button>
+                </div>
+              </div>
+
+              {/* Chọn sản phẩm */}
+              <div className="space-y-2">
+                <label className="text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300 block">
+                  2. Sản Phẩm Cần {requestModal.type === 'import' ? 'Nhập' : 'Xuất'} <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={requestModal.product?._id || ''}
+                  onChange={(e) => {
+                    const selected = products.find(p => p._id === e.target.value);
+                    setRequestModal({
+                      ...requestModal,
+                      product: selected || null,
+                      variantId: selected?.variants?.[0]?._id || selected?.colors?.[0]?._id || ''
+                    });
+                  }}
+                  required
+                  className="w-full p-3.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl text-sm font-bold text-gray-900 dark:text-white focus:outline-none focus:border-primary"
+                >
+                  <option value="">-- Chọn sản phẩm --</option>
+                  {products.map(p => (
+                    <option key={p._id} value={p._id}>
+                      {p.name} (Tồn hiện tại: {p.stock})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Chọn biến thể nếu có */}
+              {requestModal.product && ((requestModal.product.variants?.length > 0) || (requestModal.product.colors?.length > 0)) && (
+                <div className="space-y-2 animate-fade-in">
+                  <label className="text-xs font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400 block">
+                    Chọn Phân Loại / Màu Sắc / Phiên Bản
+                  </label>
+                  <select
+                    value={requestModal.variantId}
+                    onChange={(e) => setRequestModal({ ...requestModal, variantId: e.target.value })}
+                    className="w-full p-3.5 bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-800/50 rounded-2xl text-sm font-bold text-indigo-900 dark:text-indigo-200 focus:outline-none focus:border-indigo-500"
+                  >
+                    <option value="">-- Tất cả phân loại --</option>
+                    {(requestModal.product.variants?.length > 0 ? requestModal.product.variants : requestModal.product.colors || []).map(v => (
+                      <option key={v._id} value={v._id}>
+                        {v.color || v.name || 'Mặc định'} {v.ram ? `- RAM ${v.ram}` : ''} {v.storage ? `- ROM ${v.storage}` : ''} (Tồn: {v.stock || 0})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Số lượng đề xuất & Mức ưu tiên */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300 block">
+                    3. Số Lượng Đề Xuất <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    required
+                    value={requestModal.qty}
+                    onChange={(e) => setRequestModal({ ...requestModal, qty: e.target.value })}
+                    placeholder="Ví dụ: 50"
+                    className="w-full p-3.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl text-base font-black text-gray-900 dark:text-white focus:outline-none focus:border-primary"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300 block">
+                    4. Mức Độ Khẩn Cấp <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={requestModal.priority}
+                    onChange={(e) => setRequestModal({ ...requestModal, priority: e.target.value })}
+                    className="w-full p-3.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl text-sm font-bold text-gray-900 dark:text-white focus:outline-none focus:border-primary"
+                  >
+                    <option value="high">🔴 Khẩn cấp (Cần ngay lập tức)</option>
+                    <option value="medium">🟡 Trung bình (Trong tuần này)</option>
+                    <option value="low">🟢 Bình thường (Định kỳ)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Ghi chú / Lý do */}
+              <div className="space-y-2">
+                <label className="text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300 block">
+                  5. Lý Do / Ghi Chú Chi Tiết
+                </label>
+                <textarea
+                  rows="3"
+                  value={requestModal.note}
+                  onChange={(e) => setRequestModal({ ...requestModal, note: e.target.value })}
+                  placeholder="Ví dụ: Khách đang hỏi mua màu Titan Tự nhiên rất nhiều, kho hiện tại đã hết sạch, đề nghị Admin nhập hàng gấp..."
+                  className="w-full p-3.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl text-sm font-semibold text-gray-900 dark:text-white focus:outline-none focus:border-primary resize-none"
+                />
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
+                <button
+                  type="button"
+                  onClick={() => setRequestModal(null)}
+                  className="px-5 py-3 rounded-2xl font-extrabold text-xs text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+                >
+                  Hủy Bỏ
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingRequest || !requestModal.product}
+                  className="px-6 py-3 rounded-2xl font-black text-xs text-white bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 transition-all shadow-lg shadow-amber-500/30 flex items-center gap-2 disabled:opacity-50 hover:scale-105"
+                >
+                  {submittingRequest ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                  <span>🚀 Gửi Yêu Cầu Đến Quản Lý & Admin</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

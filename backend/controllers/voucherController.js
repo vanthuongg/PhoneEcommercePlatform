@@ -411,10 +411,10 @@ exports.notifyVoucher = async (req, res) => {
     const voucher = await Voucher.findById(req.params.id);
     if (!voucher) return res.status(404).json({ success: false, message: 'Không tìm thấy voucher' });
     
-    // Gửi thông báo đẩy broadcast chung (user = null, role = all)
+    // Gửi thông báo đẩy chỉ cho customer
     await Notification.create({
       user: null,
-      role: 'all',
+      role: 'customer',
       title: '🎁 Mã Giảm Giá Đặc Biệt',
       message: `Nhanh tay sử dụng mã ${voucher.code} - ${voucher.title}. Số lượng có hạn!`,
       type: 'promo',

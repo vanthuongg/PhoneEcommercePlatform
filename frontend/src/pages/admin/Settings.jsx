@@ -22,8 +22,8 @@ const Settings = () => {
 
   // System, Notification & Security settings
   const [siteSettings, setSiteSettings] = useState({
-    siteName: 'ShopVN',
-    siteEmail: 'admin@shopvn.com',
+    siteName: 'TechPhone Store',
+    siteEmail: 'support@techphone.vn',
     currency: 'VND',
     timezone: 'Asia/Ho_Chi_Minh',
     maintenanceMode: false,
@@ -317,7 +317,7 @@ const Settings = () => {
                       value={siteSettings.siteName || ''}
                       onChange={(e) => setSiteSettings({ ...siteSettings, siteName: e.target.value })}
                       className="input-field py-1.5 px-3 text-xs sm:text-sm"
-                      placeholder="Ví dụ: ShopVN"
+                      placeholder="Ví dụ: TechPhone Store"
                     />
                   </div>
                   <div>
@@ -327,7 +327,7 @@ const Settings = () => {
                       value={siteSettings.siteEmail || ''}
                       onChange={(e) => setSiteSettings({ ...siteSettings, siteEmail: e.target.value })}
                       className="input-field py-1.5 px-3 text-xs sm:text-sm"
-                      placeholder="admin@shopvn.com"
+                      placeholder="support@techphone.vn"
                     />
                   </div>
                   <div>

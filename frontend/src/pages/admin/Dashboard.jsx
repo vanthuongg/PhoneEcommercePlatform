@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { statsAPI, orderAPI } from '../../services/api';
-import { TrendingUp, TrendingDown, Users, Package, DollarSign, Sparkles, RefreshCw, Smartphone, CheckCircle2 } from 'lucide-react';
+import { TrendingUp, TrendingDown, Users, Package, DollarSign, Sparkles, RefreshCw, Smartphone, CheckCircle2, Clock, ShoppingBag, ArrowRight } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import toast from 'react-hot-toast';
 
@@ -218,53 +219,97 @@ const Dashboard = () => {
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-3.5">
         {/* Recent orders table with quick update (8 cols) */}
-        <div className="xl:col-span-8 bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-3">
-          <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 dark:border-slate-800">
+        <div className="xl:col-span-8 bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
             <div>
-              <h2 className="text-base font-black text-slate-900 dark:text-white font-display">⚡ Bảng Đơn Hàng Mới Nhất</h2>
-              <p className="text-[11px] text-slate-500 font-medium">Thay đổi trạng thái trực tiếp để điều phối giao hàng nhanh</p>
+              <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-display flex items-center gap-2">
+                <Package className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                <span>Đơn Hàng Gần Đây</span>
+              </h2>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">Thay đổi trạng thái trực tiếp để điều phối giao hàng nhanh</p>
             </div>
-            <span className="text-[11px] font-extrabold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 px-2.5 py-1 rounded-lg">{recentOrders.length} đơn gần đây</span>
+            <div className="flex items-center gap-2.5">
+              <span className="text-[11px] font-extrabold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 px-3 py-1 rounded-full border border-primary-100 dark:border-primary-800/50">
+                {recentOrders.length} đơn mới
+              </span>
+              <Link
+                to="/admin/orders"
+                className="text-xs font-bold text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 flex items-center gap-1 hover:underline ml-1"
+              >
+                <span>Xem tất cả</span> <ArrowRight size={14} />
+              </Link>
+            </div>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-slate-800 text-[10px] font-black uppercase text-slate-400 tracking-wider">
-                  <th className="pb-2.5">Mã Đơn</th>
-                  <th className="pb-2.5">Khách Hàng</th>
-                  <th className="pb-2.5">Tổng Tiền</th>
-                  <th className="pb-2.5">Cập Nhật Trạng Thái</th>
+                  <th className="pb-3">Mã Đơn & Thời Gian</th>
+                  <th className="pb-3">Khách Hàng & Sản Phẩm</th>
+                  <th className="pb-3">Tổng Tiền & Thanh Toán</th>
+                  <th className="pb-3">Cập Nhật Trạng Thái</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-[11px] font-medium">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs font-medium">
                 {recentOrders.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="py-6 text-center text-slate-400 font-bold">Chưa có đơn hàng nào vừa phát sinh</td>
+                    <td colSpan={4} className="py-8 text-center">
+                      <div className="flex flex-col items-center justify-center space-y-2">
+                        <Package className="w-10 h-10 text-slate-300 dark:text-slate-600 animate-bounce-slow" />
+                        <p className="text-slate-500 dark:text-slate-400 font-bold">Chưa có đơn hàng nào vừa phát sinh</p>
+                      </div>
+                    </td>
                   </tr>
                 ) : (
-                  recentOrders.map((order) => (
-                    <tr key={order._id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
-                      <td className="py-2.5 font-mono font-black text-primary-600 dark:text-primary-400">#{order.orderCode || order._id.slice(-6).toUpperCase()}</td>
-                      <td className="py-2.5 font-bold text-slate-900 dark:text-white">{order.shippingAddress?.name || order.user?.name || 'Khách vãng lai'}</td>
-                      <td className="py-2.5 font-black text-red-600 dark:text-red-400">{formatPrice(order.totalAmount)}</td>
-                      <td className="py-2.5">
-                        <select
-                          disabled={updatingId === order._id || order.orderStatus === 'cancelled'}
-                          value={order.orderStatus}
-                          onChange={(e) => handleQuickStatusUpdate(order._id, e.target.value)}
-                          className="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[11px] font-extrabold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer disabled:opacity-50 transition-all"
-                        >
-                          <option value="pending">⏳ Chờ xác nhận</option>
-                          <option value="confirmed">✓ Đã xác nhận</option>
-                          <option value="processing">📦 Đang đóng gói</option>
-                          <option value="shipping">🚚 Đang giao</option>
-                          <option value="delivered">🎉 Đã giao</option>
-                          <option value="cancelled">❌ Đã hủy</option>
-                        </select>
-                      </td>
-                    </tr>
-                  ))
+                  recentOrders.map((order) => {
+                    const orderCode = order.orderCode || order._id?.slice(-6).toUpperCase() || 'N/A';
+                    const customerName = order.shippingAddress?.name || order.user?.name || 'Khách vãng lai';
+                    const itemCount = order.items?.length || 0;
+                    const orderDate = order.createdAt ? new Date(order.createdAt).toLocaleDateString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) : 'Vừa xong';
+                    const payMethod = order.paymentMethod === 'vnpay' ? 'VNPay' : order.paymentMethod === 'banking' ? 'Chuyển khoản' : 'Tiền mặt (COD)';
+
+                    return (
+                      <tr key={order._id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors group">
+                        <td className="py-3 pr-3">
+                          <Link to={`/admin/orders`} className="font-mono font-black text-primary-600 dark:text-primary-400 hover:underline block">
+                            #{orderCode}
+                          </Link>
+                          <span className="text-[10px] text-slate-400 font-medium flex items-center gap-1 mt-0.5">
+                            <Clock size={11} /> {orderDate}
+                          </span>
+                        </td>
+                        <td className="py-3 pr-3">
+                          <p className="font-bold text-slate-900 dark:text-white line-clamp-1">{customerName}</p>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
+                            <ShoppingBag size={11} className="text-amber-500" />
+                            <span>{itemCount} sản phẩm</span>
+                          </p>
+                        </td>
+                        <td className="py-3 pr-3">
+                          <span className="font-black text-red-600 dark:text-red-400 block">{formatPrice(order.totalAmount)}</span>
+                          <span className="inline-block text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 mt-0.5 border border-slate-200 dark:border-slate-700">
+                            {payMethod}
+                          </span>
+                        </td>
+                        <td className="py-3">
+                          <select
+                            disabled={updatingId === order._id || order.orderStatus === 'cancelled'}
+                            value={order.orderStatus || 'pending'}
+                            onChange={(e) => handleQuickStatusUpdate(order._id, e.target.value)}
+                            className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-extrabold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer disabled:opacity-50 transition-all shadow-xs hover:border-primary-500/50"
+                          >
+                            <option value="pending">⏳ Chờ xác nhận</option>
+                            <option value="confirmed">✓ Đã xác nhận</option>
+                            <option value="processing">📦 Đang đóng gói</option>
+                            <option value="shipping">🚚 Đang giao</option>
+                            <option value="delivered">🎉 Đã giao</option>
+                            <option value="cancelled">❌ Đã hủy</option>
+                          </select>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

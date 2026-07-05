@@ -21,7 +21,7 @@ const hasKeyword = (cleanedMsg, keywords) => {
 const faqResponses = {
   shipping: {
     keywords: ['giao hang', 'van chuyen', 'ship', 'delivery', 'giao', 'phi van chuyen', 'phi ship', 'bao lau', 'ship khong'],
-    response: '🚚 **Dạ, thông tin giao hàng của ShopVN đây ạ:**\n• Giao hàng toàn quốc tận nơi.\n• Phí vận chuyển đồng giá: 30.000₫/đơn.\n• Thời gian: 2-4 ngày (nội thành HCM/HN nhận ngay trong 2-4h).\n• Đặc biệt: Miễn phí ship cho đơn từ 500.000₫ nha bạn!',
+    response: '🚚 **Dạ, thông tin giao hàng của TechPhone Store đây ạ:**\n• Giao hàng toàn quốc tận nơi.\n• Phí vận chuyển đồng giá: 30.000₫/đơn.\n• Thời gian: 2-4 ngày (nội thành HCM/HN nhận ngay trong 2-4h).\n• Đặc biệt: Miễn phí ship cho đơn từ 500.000₫ nha bạn!',
   },
   payment: {
     keywords: ['thanh toan', 'tra tien', 'payment', 'chuyen khoan', 'momo', 'vnpay', 'cod', 'tra gop'],
@@ -33,11 +33,11 @@ const faqResponses = {
   },
   contact: {
     keywords: ['lien he', 'hotline', 'contact', 'ho tro', 'so dien thoai', 'email', 'dia chi', 'cua hang', 'o dau'],
-    response: '📞 **Dạ, anh/chị có thể liên hệ hoặc ghé shop tại:**\n• 🏠 Địa chỉ: 123 Nguyễn Văn Linh, Q.7, TP.HCM\n• ☎️ Hotline: 1900 1234 (miễn phí)\n• 📧 Email: support@shopvn.com\n• ⏰ Giờ mở cửa: 8h00 - 22h00 các ngày trong tuần ạ.',
+    response: '📞 **Dạ, anh/chị có thể liên hệ hoặc ghé shop tại:**\n• 🏠 Địa chỉ: 123 Nguyễn Văn Linh, Q.7, TP.HCM\n• ☎️ Hotline: 1900 1234 (miễn phí)\n• 📧 Email: support@techphone.vn\n• ⏰ Giờ mở cửa: 8h00 - 22h00 các ngày trong tuần ạ.',
   },
   promotions: {
     keywords: ['khuyen mai', 'giam gia', 'sale', 'voucher', 'ma giam', 'uu dai', 'promotion', 'chuong trinh'],
-    response: '🎉 **Dạ, ShopVN đang có rất nhiều ưu đãi:**\n• Giảm giá siêu sâu cho Apple & Samsung.\n• Voucher giảm ngay 10% cho khách hàng mới (Đăng ký tài khoản).\n• Tích điểm thành viên đổi quà.\n\nAnh/chị dạo quanh trang Cửa hàng để săn deal nha!',
+    response: '🎉 **Dạ, TechPhone Store đang có rất nhiều ưu đãi:**\n• Giảm giá siêu sâu cho Apple & Samsung.\n• Voucher giảm ngay 10% cho khách hàng mới (Đăng ký tài khoản).\n• Tích điểm thành viên đổi quà.\n\nAnh/chị dạo quanh trang Cửa hàng để săn deal nha!',
   },
   order: {
     keywords: ['don hang', 'trang thai', 'theo doi', 'order', 'tracking', 'da dat', 'huy don'],
@@ -161,7 +161,7 @@ const processMessage = async (req, res) => {
 
     switch (intent) {
       case 'greeting': {
-        responseText = 'Dạ xin chào! 👋 Em là trợ lý mua sắm của **ShopVN**.\n\nEm có thể giúp anh/chị:\n• 🔍 Tìm sản phẩm ưng ý\n• 💰 Báo giá và ưu đãi\n• 📦 Check tồn kho\n• 🚚 Trả lời câu hỏi về giao hàng, bảo hành...\n\nHôm nay mình muốn tìm mua gì ạ?';
+        responseText = 'Dạ xin chào! 👋 Em là trợ lý mua sắm của **TechPhone Store**.\n\nEm có thể giúp anh/chị:\n• 🔍 Tìm sản phẩm ưng ý\n• 💰 Báo giá và ưu đãi\n• 📦 Check tồn kho\n• 🚚 Trả lời câu hỏi về giao hàng, bảo hành...\n\nHôm nay mình muốn tìm mua gì ạ?';
         break;
       }
 

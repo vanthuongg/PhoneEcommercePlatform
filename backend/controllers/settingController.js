@@ -27,8 +27,8 @@ const getPublicSettings = async (req, res) => {
     res.json({
       success: true,
       data: {
-        siteName: settings.siteName || 'ShopVN',
-        siteEmail: settings.siteEmail || 'admin@shopvn.com',
+        siteName: settings.siteName || 'TechPhone Store',
+        siteEmail: settings.siteEmail || 'support@techphone.vn',
         currency: settings.currency || 'VND',
         timezone: settings.timezone || 'Asia/Ho_Chi_Minh',
         maintenanceMode: settings.maintenanceMode || false,
