@@ -5,6 +5,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { orderAPI } from '../../services/api';
 import Breadcrumb from '../../components/ui/Breadcrumb';
 import VoucherPickerModal from '../../components/ui/VoucherPickerModal';
+import PaymentMethodSelector from '../../components/checkout/PaymentMethodSelector';
+import OrderSuccessPaymentCard from '../../components/checkout/OrderSuccessPaymentCard';
 import { Package, ArrowLeft, Loader2, CheckCircle2, Home, FileText, ShieldCheck, Truck, Tag, Sparkles, CreditCard, DollarSign, Gift, Store, Check, X, Copy, Clock, Calendar, MapPin, Phone, User, ShoppingBag, ArrowRight, Shield, Award, Zap, ChevronRight, HelpCircle, HeartHandshake } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -259,6 +261,9 @@ const Checkout = () => {
               </div>
             </div>
           </div>
+
+          {/* Dedicated Payment Card for Bank Transfer, MoMo, VNPay */}
+          <OrderSuccessPaymentCard order={successOrder} />
 
           {/* 2-Column Compact Grid */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
@@ -574,45 +579,14 @@ const Checkout = () => {
                 </div>
               </div>
 
-              {/* Payment Method */}
-              <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 sm:p-8 border border-gray-100 dark:border-gray-800 shadow-sm space-y-6">
-                <div className="flex items-center gap-3 pb-4 border-b border-gray-100 dark:border-gray-800">
-                  <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-black">2</div>
-                  <h2 className="text-lg font-black text-gray-900 dark:text-white">💳 Phương Thức Thanh Toán</h2>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {[
-                    { value: 'cod', label: 'Thanh toán tiền mặt khi nhận hàng (COD)', desc: 'Kiểm tra máy nguyên seal trước khi trả tiền', emoji: '💵' },
-                    { value: 'bank_transfer', label: 'Chuyển khoản QR Bank 24/7', desc: 'Giảm thêm hoặc ưu đãi quà tặng (tự động duyệt)', emoji: '🏦' },
-                    { value: 'momo', label: 'Ví điện tử MoMo', desc: 'Quét mã QR qua app MoMo siêu nhanh', emoji: '📱' },
-                    { value: 'vnpay', label: 'Cổng thanh toán VNPay ATM/Visa', desc: 'Hỗ trợ trả góp 0% qua thẻ tín dụng', emoji: '🔐' },
-                  ].map((method) => (
-                    <label
-                      key={method.value}
-                      className={`flex items-start gap-4 p-4 rounded-3xl border-2 cursor-pointer transition-all ${
-                        form.paymentMethod === method.value
-                          ? 'border-primary bg-primary/5 dark:bg-primary-900/20 shadow-md scale-[1.01]'
-                          : 'border-gray-200 dark:border-gray-800 hover:border-gray-300 bg-gray-50/50 dark:bg-gray-800/40'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="payment"
-                        value={method.value}
-                        checked={form.paymentMethod === method.value}
-                        onChange={(e) => setForm({ ...form, paymentMethod: e.target.value })}
-                        className="mt-1 text-primary focus:ring-primary"
-                      />
-                      <span className="text-3xl shrink-0">{method.emoji}</span>
-                      <div>
-                        <div className="text-sm font-black text-gray-900 dark:text-white">{method.label}</div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{method.desc}</div>
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              </div>
+              {/* Payment Method Selector Component */}
+              <PaymentMethodSelector
+                selectedMethod={form.paymentMethod}
+                onSelectMethod={(method) => setForm({ ...form, paymentMethod: method })}
+                totalAmount={finalTotal}
+                userPhone={form.phone}
+                userName={form.name}
+              />
             </div>
 
             {/* Right Column: Order Summary (4 cols) */}

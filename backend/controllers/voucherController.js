@@ -418,7 +418,7 @@ exports.notifyVoucher = async (req, res) => {
       title: '🎁 Mã Giảm Giá Đặc Biệt',
       message: `Nhanh tay sử dụng mã ${voucher.code} - ${voucher.title}. Số lượng có hạn!`,
       type: 'promo',
-      link: '/shop'
+      link: '/vouchers'
     });
     
     res.json({ success: true, message: `Đã gửi thông báo voucher thành công` });

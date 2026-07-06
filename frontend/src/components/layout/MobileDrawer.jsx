@@ -63,19 +63,19 @@ const MobileDrawer = ({ isOpen, onClose }) => {
             <Link to="/shop" onClick={onClose} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
               <Zap size={18} className="text-amber-500" /> Khám phá Cửa hàng
             </Link>
-            <Link to="/cart" onClick={onClose} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
-              <ShoppingBag size={18} className="text-blue-500" /> Giỏ hàng
-            </Link>
-            {isAuthenticated && (
+            {(!user || user?.role === 'customer') && (
+              <Link to="/cart" onClick={onClose} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
+                <ShoppingBag size={18} className="text-blue-500" /> Giỏ hàng
+              </Link>
+            )}
+            {isAuthenticated && user?.role === 'customer' && (
               <>
                 <Link to="/wishlist" onClick={onClose} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
                   <Heart size={18} className="text-red-500" /> Sản phẩm yêu thích
                 </Link>
-                {user?.role === 'customer' && (
-                  <Link to="/profile?tab=orders" onClick={onClose} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
-                    <Package size={18} className="text-emerald-500" /> Đơn hàng của tôi
-                  </Link>
-                )}
+                <Link to="/profile?tab=orders" onClick={onClose} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
+                  <Package size={18} className="text-emerald-500" /> Đơn hàng của tôi
+                </Link>
               </>
             )}
           </div>

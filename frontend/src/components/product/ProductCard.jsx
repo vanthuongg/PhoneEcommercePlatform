@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { useCompare } from '../../contexts/CompareContext';
+import { useAuth } from '../../contexts/AuthContext';
 import RatingStars from '../ui/RatingStars';
 import { Heart, ShoppingCart, Zap, Sparkles, Scale, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -11,6 +12,8 @@ const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { isInCompare, addToCompare, removeFromCompare } = useCompare();
+  const { user } = useAuth();
+  const isCustomerOrGuest = !user || user.role === 'customer';
   const navigate = useNavigate();
   const [addedSuccess, setAddedSuccess] = useState(false);
 
@@ -103,18 +106,20 @@ const ProductCard = ({ product }) => {
 
       {/* Action floating bar bên phải */}
       <div className="absolute top-3 right-3 z-20 flex flex-col gap-1.5">
-        <button
-          type="button"
-          onClick={handleToggleWishlist}
-          className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-250 ${
-            isWishlisted
-              ? 'bg-red-500 text-white scale-105 shadow-sm'
-              : 'bg-white/90 dark:bg-slate-850/90 backdrop-blur-md text-slate-400 hover:text-red-500 shadow-xs border border-slate-200/40 dark:border-slate-800/40'
-          }`}
-          title="Yêu thích"
-        >
-          <Heart size={15} className={isWishlisted ? 'fill-white' : ''} />
-        </button>
+        {isCustomerOrGuest && (
+          <button
+            type="button"
+            onClick={handleToggleWishlist}
+            className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-250 ${
+              isWishlisted
+                ? 'bg-red-500 text-white scale-105 shadow-sm'
+                : 'bg-white/90 dark:bg-slate-850/90 backdrop-blur-md text-slate-400 hover:text-red-500 shadow-xs border border-slate-200/40 dark:border-slate-800/40'
+            }`}
+            title="Yêu thích"
+          >
+            <Heart size={15} className={isWishlisted ? 'fill-white' : ''} />
+          </button>
+        )}
 
         <button
           type="button"
@@ -185,29 +190,37 @@ const ProductCard = ({ product }) => {
           </div>
 
           {/* Action Button */}
-          <button
-            type="button"
-            onClick={handleAddToCart}
-            disabled={product.stock <= 0}
-            className={`w-full py-2 rounded-full text-xs font-semibold flex items-center justify-center gap-1.5 transition-all duration-200 active:scale-98 ${
-              addedSuccess
-                ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                : 'btn-primary'
-            }`}
-            title="Thêm vào giỏ hàng"
-          >
-            {addedSuccess ? (
-              <>
-                <Check size={14} />
-                <span>Đã thêm vào giỏ</span>
-              </>
-            ) : (
-              <>
-                <ShoppingCart size={14} />
-                <span>{product.variants && product.variants.length > 0 ? 'Chọn phiên bản' : 'Chọn mua'}</span>
-              </>
-            )}
-          </button>
+          {isCustomerOrGuest ? (
+            <button
+              type="button"
+              onClick={handleAddToCart}
+              disabled={product.stock <= 0}
+              className={`w-full py-2 rounded-full text-xs font-semibold flex items-center justify-center gap-1.5 transition-all duration-200 active:scale-98 ${
+                addedSuccess
+                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                  : 'btn-primary'
+              }`}
+              title="Thêm vào giỏ hàng"
+            >
+              {addedSuccess ? (
+                <>
+                  <Check size={14} />
+                  <span>Đã thêm vào giỏ</span>
+                </>
+              ) : (
+                <>
+                  <ShoppingCart size={14} />
+                  <span>{product.variants && product.variants.length > 0 ? 'Chọn phiên bản' : 'Chọn mua'}</span>
+                </>
+              )}
+            </button>
+          ) : (
+            <span
+              className="w-full py-2 rounded-full text-xs font-semibold flex items-center justify-center gap-1.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all duration-200"
+            >
+              <span>Xem chi tiết</span>
+            </span>
+          )}
         </div>
       </div>
     </Link>

@@ -502,6 +502,14 @@ const Orders = () => {
                       )}
                     </div>
                   </div>
+                ) : selectedOrder.orderStatus === 'delivered' ? (
+                  <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 flex items-center gap-3">
+                    <CheckCircle2 className="w-6 h-6 text-emerald-500 shrink-0" />
+                    <div>
+                      <p className="font-bold text-sm">Đơn hàng đã giao thành công (Hoàn tất)</p>
+                      <p className="text-xs text-emerald-600 dark:text-emerald-300 mt-0.5">Quy trình xử lý đơn hàng đã hoàn tất. Không thể thay đổi trạng thái.</p>
+                    </div>
+                  </div>
                 ) : (
                   <div className="relative">
                     {/* Progress Bar background */}
@@ -668,101 +676,101 @@ const Orders = () => {
               </div>
 
               {/* 4. MANAGEMENT CONTROLS (PAYMENT & ORDER STATUS) */}
-              <div className="bg-slate-100 dark:bg-slate-800/60 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 space-y-6">
-                <h3 className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                  <ShieldAlert className="w-4 h-4 text-primary-600" />
-                  <span>Bảng điều khiển trạng thái (Dành cho Quản trị viên & Nhân viên)</span>
-                </h3>
+              {selectedOrder.orderStatus !== 'cancelled' && selectedOrder.orderStatus !== 'delivered' && (
+                <div className="bg-slate-100 dark:bg-slate-800/60 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 space-y-6">
+                  <h3 className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                    <ShieldAlert className="w-4 h-4 text-primary-600" />
+                    <span>Bảng điều khiển trạng thái (Dành cho Quản trị viên & Nhân viên)</span>
+                  </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Payment Status Control */}
-                  <div className="space-y-2">
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                      Trạng thái thanh toán:
-                    </label>
-                    <div className="flex gap-2">
-                      <select
-                        value={selectedPaymentStatus}
-                        onChange={(e) => setSelectedPaymentStatus(e.target.value)}
-                        className="flex-1 px-3 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      >
-                        <option value="pending">Chờ thanh toán</option>
-                        <option value="paid">Đã thanh toán (Paid)</option>
-                        <option value="failed">Thất bại (Failed)</option>
-                        <option value="refunded">Đã hoàn tiền (Refunded)</option>
-                      </select>
-                      <button
-                        onClick={() => handleUpdatePaymentStatus(selectedOrder._id, selectedPaymentStatus)}
-                        disabled={updating || selectedPaymentStatus === selectedOrder.paymentStatus}
-                        className="px-4 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-500/20 active:scale-95 transition-all disabled:opacity-40"
-                      >
-                        Lưu TT
-                      </button>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Payment Status Control */}
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                        Trạng thái thanh toán:
+                      </label>
+                      <div className="flex gap-2">
+                        <select
+                          value={selectedPaymentStatus}
+                          onChange={(e) => setSelectedPaymentStatus(e.target.value)}
+                          className="flex-1 px-3 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        >
+                          <option value="pending">Chờ thanh toán</option>
+                          <option value="paid">Đã thanh toán (Paid)</option>
+                          <option value="failed">Thất bại (Failed)</option>
+                          <option value="refunded">Đã hoàn tiền (Refunded)</option>
+                        </select>
+                        <button
+                          onClick={() => handleUpdatePaymentStatus(selectedOrder._id, selectedPaymentStatus)}
+                          disabled={updating || selectedPaymentStatus === selectedOrder.paymentStatus}
+                          className="px-4 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-500/20 active:scale-95 transition-all disabled:opacity-40"
+                        >
+                          Lưu TT
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Order Status Control */}
+                    <div className="space-y-2">
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                        Chuyển trạng thái đơn hàng:
+                      </label>
+                      <div className="flex gap-2">
+                        <select
+                          value={selectedStatus}
+                          onChange={(e) => setSelectedStatus(e.target.value)}
+                          className="flex-1 px-3 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        >
+                          {Object.entries(statusConfig).map(([k, v]) => (
+                            <option key={k} value={k}>{v.label}</option>
+                          ))}
+                        </select>
+                        <button
+                          onClick={() => handleUpdateStatus(selectedOrder._id, selectedStatus, updateNote)}
+                          disabled={updating || selectedStatus === selectedOrder.orderStatus}
+                          className="px-4 py-2.5 rounded-2xl bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs shadow-md shadow-primary-500/20 active:scale-95 transition-all disabled:opacity-40"
+                        >
+                          Cập nhật
+                        </button>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Order Status Control */}
-                  <div className="space-y-2">
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                      Chuyển trạng thái đơn hàng:
-                    </label>
-                    <div className="flex gap-2">
-                      <select
-                        value={selectedStatus}
-                        onChange={(e) => setSelectedStatus(e.target.value)}
-                        className="flex-1 px-3 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      >
-                        {Object.entries(statusConfig).map(([k, v]) => (
-                          <option key={k} value={k}>{v.label}</option>
-                        ))}
-                      </select>
-                      <button
-                        onClick={() => handleUpdateStatus(selectedOrder._id, selectedStatus, updateNote)}
-                        disabled={updating || selectedStatus === selectedOrder.orderStatus}
-                        className="px-4 py-2.5 rounded-2xl bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs shadow-md shadow-primary-500/20 active:scale-95 transition-all disabled:opacity-40"
-                      >
-                        Cập nhật
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                  {/* Quick Step Buttons & Note Input */}
+                  <div className="pt-4 border-t border-slate-200 dark:border-slate-700 space-y-4">
+                    <input
+                      type="text"
+                      placeholder="Ghi chú nội bộ cho thao tác này (tùy chọn)..."
+                      value={updateNote}
+                      onChange={(e) => setUpdateNote(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-xs font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    />
 
-                {/* Quick Step Buttons & Note Input */}
-                <div className="pt-4 border-t border-slate-200 dark:border-slate-700 space-y-4">
-                  <input
-                    type="text"
-                    placeholder="Ghi chú nội bộ cho thao tác này (tùy chọn)..."
-                    value={updateNote}
-                    onChange={(e) => setUpdateNote(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-xs font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  />
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex gap-2">
+                        {prevStatusMap[selectedOrder.orderStatus] && (
+                          <button
+                            onClick={() => handleUpdateStatus(selectedOrder._id, prevStatusMap[selectedOrder.orderStatus], updateNote || 'Quay lại bước trước')}
+                            disabled={updating}
+                            className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600 font-bold text-xs flex items-center gap-1.5 transition-all"
+                          >
+                            <RotateCcw className="w-3.5 h-3.5" />
+                            <span>Quay lại: {statusConfig[prevStatusMap[selectedOrder.orderStatus]]?.label}</span>
+                          </button>
+                        )}
 
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex gap-2">
-                      {prevStatusMap[selectedOrder.orderStatus] && (
-                        <button
-                          onClick={() => handleUpdateStatus(selectedOrder._id, prevStatusMap[selectedOrder.orderStatus], updateNote || 'Quay lại bước trước')}
-                          disabled={updating}
-                          className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600 font-bold text-xs flex items-center gap-1.5 transition-all"
-                        >
-                          <RotateCcw className="w-3.5 h-3.5" />
-                          <span>Quay lại: {statusConfig[prevStatusMap[selectedOrder.orderStatus]]?.label}</span>
-                        </button>
-                      )}
+                        {nextStatusMap[selectedOrder.orderStatus] && (
+                          <button
+                            onClick={() => handleUpdateStatus(selectedOrder._id, nextStatusMap[selectedOrder.orderStatus], updateNote || 'Chuyển bước tiếp theo')}
+                            disabled={updating}
+                            className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-md shadow-emerald-500/20 active:scale-95 transition-all flex items-center gap-1.5"
+                          >
+                            <span>Bước tiếp: {statusConfig[nextStatusMap[selectedOrder.orderStatus]]?.label}</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
 
-                      {nextStatusMap[selectedOrder.orderStatus] && (
-                        <button
-                          onClick={() => handleUpdateStatus(selectedOrder._id, nextStatusMap[selectedOrder.orderStatus], updateNote || 'Chuyển bước tiếp theo')}
-                          disabled={updating}
-                          className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-md shadow-emerald-500/20 active:scale-95 transition-all flex items-center gap-1.5"
-                        >
-                          <span>Bước tiếp: {statusConfig[nextStatusMap[selectedOrder.orderStatus]]?.label}</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-                    </div>
-
-                    {selectedOrder.orderStatus !== 'cancelled' && selectedOrder.orderStatus !== 'delivered' && (
                       <button
                         onClick={() => setShowCancelModal(true)}
                         className="px-4 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-xs flex items-center gap-1.5 transition-all"
@@ -770,10 +778,10 @@ const Orders = () => {
                         <Ban className="w-3.5 h-3.5" />
                         <span>Hủy đơn hàng này</span>
                       </button>
-                    )}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
             </div>
 

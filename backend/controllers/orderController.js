@@ -250,7 +250,7 @@ const createOrder = async (req, res) => {
       title: `🎉 Đặt hàng thành công #${order.orderCode}`,
       message: `Đơn hàng trị giá ${totalAmount.toLocaleString()}đ của bạn đã được ghi nhận và đang chờ xử lý.`,
       type: 'order',
-      link: `/profile?tab=orders`,
+      link: `/orders/${order._id}`,
     }).catch(console.error);
 
     res.status(201).json({ success: true, message: 'Đặt hàng thành công', data: order });
@@ -333,6 +333,13 @@ const updateOrderStatus = async (req, res) => {
 
     const order = await Order.findById(req.params.id).populate('user', 'name email');
     if (!order) return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng' });
+
+    if (order.orderStatus === 'cancelled') {
+      return res.status(400).json({ success: false, message: 'Đơn hàng đã hủy không thể thay đổi trạng thái' });
+    }
+    if (order.orderStatus === 'delivered') {
+      return res.status(400).json({ success: false, message: 'Đơn hàng đã giao thành công không thể thay đổi trạng thái' });
+    }
 
     const previousStatus = order.orderStatus;
     order.orderStatus = status;
@@ -527,7 +534,7 @@ const cancelOrder = async (req, res) => {
       title: `🚫 Đã hủy đơn hàng #${order.orderCode}`,
       message: `Đơn hàng của bạn đã được hủy thành công.`,
       type: 'order',
-      link: `/profile?tab=orders`,
+      link: `/orders/${order._id}`,
     }).catch(console.error);
 
     res.json({ success: true, message: 'Hủy đơn hàng thành công', data: order });

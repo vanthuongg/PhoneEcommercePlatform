@@ -12,7 +12,7 @@ const formatPrice = (price) =>
 const ChatProductCard = ({ product }) => {
   const { addToCart } = useCart();
   const { user } = useAuth();
-  const isCustomer = true;
+  const isCustomer = !user || user.role === 'customer';
   const displayPrice = product.salePrice > 0 ? product.salePrice : product.price;
   const hasDiscount = product.salePrice > 0 && product.salePrice < product.price;
 

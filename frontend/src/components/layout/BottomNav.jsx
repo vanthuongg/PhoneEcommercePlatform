@@ -1,19 +1,28 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
-import { Home, Grid, ShoppingBag, Package, User } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { Home, Grid, ShoppingBag, Package, User, Bell, Shield } from 'lucide-react';
 
 const BottomNav = () => {
   const location = useLocation();
   const { cartCount } = useCart();
+  const { user } = useAuth();
   const path = location.pathname;
+  const isCustomerOrGuest = !user || user.role === 'customer';
 
-  const tabs = [
+  const tabs = isCustomerOrGuest ? [
     { label: 'Trang chủ', icon: Home, link: '/' },
     { label: 'Danh mục', icon: Grid, link: '/shop' },
     { label: 'Giỏ hàng', icon: ShoppingBag, link: '/cart', badge: cartCount },
     { label: 'Đơn hàng', icon: Package, link: '/profile?tab=orders' },
-    { label: 'Tài khoản', icon: User, link: '/profile?tab=profile' },
+    { label: 'Tài khoản', icon: User, link: '/profile?tab=info' },
+  ] : [
+    { label: 'Trang chủ', icon: Home, link: '/' },
+    { label: 'Cửa hàng', icon: Grid, link: '/shop' },
+    { label: 'Quản trị', icon: Shield, link: `/${user.role}` },
+    { label: 'Thông báo', icon: Bell, link: '/profile?tab=notifications' },
+    { label: 'Tài khoản', icon: User, link: '/profile?tab=info' },
   ];
 
   return (

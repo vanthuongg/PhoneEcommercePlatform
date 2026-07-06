@@ -34,7 +34,7 @@ const ProductDetail = () => {
   const { addToCart } = useCart();
   const { user } = useAuth();
   const { isInWishlist, toggleWishlist } = useWishlist();
-  const isCustomer = true;
+  const isCustomer = !user || user.role === 'customer';
 
   const defaultColors = ['Titan tự nhiên', 'Đen sa mạc', 'Trắng ngọc trai', 'Xanh đại dương'];
   const defaultStorages = ['128GB', '256GB', '512GB', '1TB'];
@@ -216,16 +216,18 @@ const ProductDetail = () => {
                       {isInCompare(product._id || product.id) ? 'Đã so sánh' : 'So sánh'}
                     </span>
                   </button>
-                  <button
-                    onClick={() => toggleWishlist(product)}
-                    className={`p-2.5 rounded-full transition-all flex items-center gap-1.5 text-xs font-semibold border ${
-                      isWishlisted
-                        ? 'bg-red-500 text-white border-red-500 shadow-sm'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-red-500 hover:text-red-500'
-                    }`}
-                  >
-                    <Heart size={15} className={isWishlisted ? 'fill-white' : ''} />
-                  </button>
+                  {isCustomer && (
+                    <button
+                      onClick={() => toggleWishlist(product)}
+                      className={`p-2.5 rounded-full transition-all flex items-center gap-1.5 text-xs font-semibold border ${
+                        isWishlisted
+                          ? 'bg-red-500 text-white border-red-500 shadow-sm'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-red-500 hover:text-red-500'
+                      }`}
+                    >
+                      <Heart size={15} className={isWishlisted ? 'fill-white' : ''} />
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -348,7 +350,7 @@ const ProductDetail = () => {
               </div>
 
               {/* Action Buttons */}
-              {isCustomer && (
+              {isCustomer ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
                   <button
                     type="button"
@@ -378,6 +380,27 @@ const ProductDetail = () => {
                   >
                     <Zap size={16} className="fill-white" /> Mua Ngay
                   </button>
+                </div>
+              ) : (
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-4">
+                  <div className="flex items-center gap-3">
+                    <span className="w-10 h-10 rounded-xl bg-primary-500/10 text-primary-600 dark:text-primary-400 flex items-center justify-center font-bold text-base shrink-0">
+                      🛡️
+                    </span>
+                    <div>
+                      <p className="text-xs font-bold text-slate-900 dark:text-white">Chế độ xem dành cho {user?.role === 'admin' ? 'Quản trị viên' : user?.role === 'manager' ? 'Quản lý' : 'Nhân viên'}</p>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">Chức năng đặt hàng/yêu thích được ẩn đối với tài khoản nội bộ.</p>
+                    </div>
+                  </div>
+                  {(user?.role === 'admin' || user?.role === 'manager') && (
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/${user.role}/products`)}
+                      className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-xs font-bold transition-all shrink-0 shadow-sm"
+                    >
+                      Quản lý sản phẩm
+                    </button>
+                  )}
                 </div>
               )}
             </div>

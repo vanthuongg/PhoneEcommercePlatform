@@ -294,7 +294,7 @@ const Dashboard = () => {
                         </td>
                         <td className="py-3">
                           <select
-                            disabled={updatingId === order._id || order.orderStatus === 'cancelled'}
+                            disabled={updatingId === order._id || order.orderStatus === 'cancelled' || order.orderStatus === 'delivered'}
                             value={order.orderStatus || 'pending'}
                             onChange={(e) => handleQuickStatusUpdate(order._id, e.target.value)}
                             className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-extrabold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer disabled:opacity-50 transition-all shadow-xs hover:border-primary-500/50"
