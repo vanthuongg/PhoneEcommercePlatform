@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -163,6 +163,21 @@ const Checkout = () => {
     }
   };
 
+  useEffect(() => {
+    if (!successOrder?._id) return;
+    const interval = setInterval(async () => {
+      try {
+        const res = await orderAPI.getById(successOrder._id);
+        if (res?.data) {
+          setSuccessOrder(res.data);
+        }
+      } catch (err) {
+        // ignore polling error
+      }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [successOrder?._id]);
+
   if (successOrder) {
     const orderCode = successOrder.orderCode || successOrder._id?.slice(-6).toUpperCase() || 'ORDER';
     const itemsSubtotal = successOrder.itemsTotal || (successOrder.items || []).reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 1), 0);
@@ -262,7 +277,7 @@ const Checkout = () => {
             </div>
           </div>
 
-          {/* Dedicated Payment Card for Bank Transfer, MoMo, VNPay */}
+          {/* Dedicated Payment Card for Bank Transfer (VietQR) */}
           <OrderSuccessPaymentCard order={successOrder} />
 
           {/* 2-Column Compact Grid */}
@@ -336,9 +351,7 @@ const Checkout = () => {
                       <div className="bg-white dark:bg-slate-900 px-2.5 py-1.5 rounded-lg border border-slate-200/80 dark:border-slate-700/80 font-bold text-slate-800 dark:text-slate-200 text-[11px] flex items-center gap-1.5">
                         <CreditCard size={13} className="text-primary-500 shrink-0" />
                         <span className="truncate">
-                          {successOrder.paymentMethod === 'cod' ? 'Tiền mặt (COD)' :
-                           successOrder.paymentMethod === 'bank_transfer' ? 'Chuyển khoản QR' :
-                           successOrder.paymentMethod === 'momo' ? 'Ví MoMo' : 'VNPay'}
+                          {successOrder.paymentMethod === 'cod' ? 'Tiền mặt (COD)' : 'Chuyển khoản QR (VietQR)'}
                         </span>
                       </div>
                     </div>
