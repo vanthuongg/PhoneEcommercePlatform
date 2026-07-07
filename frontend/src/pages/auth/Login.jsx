@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { Eye, EyeOff, Package, Loader2, ArrowRight, Sun, Moon, Sparkles } from 'lucide-react';
+import { Eye, EyeOff, Package, Loader2, ArrowRight, Sun, Moon } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { GoogleLogin } from '@react-oauth/google';
 
@@ -57,16 +57,6 @@ const Login = () => {
     }
   };
 
-  const fillDemo = (role) => {
-    const accounts = {
-      admin: { email: 'admin@shop.com', password: 'admin123' },
-      manager: { email: 'manager@shop.com', password: 'manager123' },
-      staff: { email: 'staff@shop.com', password: 'staff123' },
-      customer: { email: 'customer@shop.com', password: 'customer123' },
-    };
-    setForm(accounts[role]);
-  };
-
   return (
     <div className="flex h-screen w-full bg-slate-50 dark:bg-slate-950 font-sans overflow-hidden relative">
       
@@ -89,7 +79,7 @@ const Login = () => {
             <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-accent-500 to-orange-500 flex items-center justify-center shadow-lg">
               <Package className="w-6 h-6 text-white" />
             </div>
-            <span className="text-3xl font-black tracking-tight font-display">Shop<span className="text-accent-400">VN</span></span>
+            <span className="text-3xl font-black tracking-tight font-display">TechPhone<span className="text-accent-400">Store</span></span>
           </Link>
           
           <h1 className="text-5xl lg:text-6xl font-black leading-tight tracking-tight font-display">
@@ -100,13 +90,6 @@ const Login = () => {
           <p className="text-base text-slate-300 leading-relaxed font-medium">
             Truy cập tài khoản của bạn để khám phá hàng ngàn ưu đãi hấp dẫn, theo dõi đơn hàng thời gian thực và trải nghiệm mua sắm thông minh.
           </p>
-
-          <div className="flex items-center gap-4 text-sm font-semibold bg-white/5 backdrop-blur-md p-4 rounded-2xl border border-white/10 w-fit shadow-lg">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-400 to-orange-500 flex items-center justify-center text-slate-950 font-black text-xs shadow-md">
-              <Sparkles size={18} />
-            </div>
-            <p className="text-slate-200">Bảo mật tuyệt đối chuẩn <span className="font-extrabold text-white">OAuth 2.0 & JWT</span></p>
-          </div>
         </div>
       </div>
 
@@ -120,7 +103,7 @@ const Login = () => {
               <div className="w-10 h-10 bg-gradient-to-tr from-primary-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
                 <Package className="w-6 h-6 text-white" />
               </div>
-              <span className="text-2xl font-black tracking-tight text-slate-900 dark:text-white font-display">Shop<span className="text-primary-600">VN</span></span>
+              <span className="text-2xl font-black tracking-tight text-slate-900 dark:text-white font-display">TechPhone<span className="text-primary-600">Store</span></span>
             </Link>
           </div>
 
@@ -128,23 +111,6 @@ const Login = () => {
           <div className="mb-6">
             <h2 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mb-2 tracking-tight font-display">Chào mừng trở lại</h2>
             <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Đăng nhập tài khoản của bạn để tiếp tục</p>
-          </div>
-
-          {/* Google Login */}
-          <div className="mb-5">
-            <div className="transform hover:scale-[1.01] transition-all duration-200 w-full flex justify-start shadow-sm rounded-xl overflow-hidden">
-               <GoogleLogin
-                 onSuccess={handleGoogleSuccess}
-                 onError={() => toast.error('Đăng nhập Google thất bại')}
-                 width="100%"
-               />
-            </div>
-          </div>
-
-          <div className="flex items-center mb-5">
-            <div className="flex-1 border-t border-slate-200 dark:border-slate-800"></div>
-            <span className="px-4 text-xs font-extrabold text-slate-400 uppercase tracking-widest">Hoặc bằng Email</span>
-            <div className="flex-1 border-t border-slate-200 dark:border-slate-800"></div>
           </div>
 
           {/* Form */}
@@ -206,25 +172,19 @@ const Login = () => {
             </Link>
           </p>
 
-          {/* Minimalist Demo Accounts */}
-          <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800/80">
-            <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3.5 text-center">Đăng nhập nhanh (Demo tài khoản)</p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {[
-                { role: 'admin', label: 'Admin' },
-                { role: 'manager', label: 'Quản lý' },
-                { role: 'staff', label: 'Nhân viên' },
-                { role: 'customer', label: 'Khách hàng' },
-              ].map(({ role, label }) => (
-                <button
-                  key={role}
-                  type="button"
-                  onClick={() => fillDemo(role)}
-                  className="text-xs font-bold py-2.5 px-3 rounded-xl bg-slate-50 hover:bg-primary-50 dark:bg-slate-900 dark:hover:bg-primary-900/30 text-slate-700 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-300 border border-slate-200/80 dark:border-slate-800 hover:border-primary-500/40 transition-all text-center"
-                >
-                  {label}
-                </button>
-              ))}
+          {/* Google Login - Phía dưới */}
+          <div className="mt-6">
+            <div className="flex items-center mb-4">
+              <div className="flex-1 border-t border-slate-200 dark:border-slate-800"></div>
+              <span className="px-4 text-xs font-extrabold text-slate-400 uppercase tracking-widest">Hoặc đăng nhập với</span>
+              <div className="flex-1 border-t border-slate-200 dark:border-slate-800"></div>
+            </div>
+            <div className="transform hover:scale-[1.01] transition-all duration-200 w-full flex justify-center shadow-sm rounded-xl overflow-hidden">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => toast.error('Đăng nhập Google thất bại')}
+                width="320"
+              />
             </div>
           </div>
 
