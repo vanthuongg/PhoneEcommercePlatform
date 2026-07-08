@@ -1,0 +1,12 @@
+const express = require('express');
+const router = express.Router();
+const { register, login, googleLogin, getMe, changePassword } = require('./auth.controller');
+const { protect } = require('../../middleware/auth');
+
+router.post('/register', register);
+router.post('/login', login);
+router.post('/google', googleLogin);
+router.get('/me', protect, getMe);
+router.put('/change-password', protect, changePassword);
+
+module.exports = router;
