@@ -1,21 +1,21 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const User = require('../models/User');
-const Category = require('../models/Category');
-const Product = require('../models/Product');
-const Brand = require('../models/Brand');
-const Voucher = require('../models/Voucher');
-const Cart = require('../models/Cart');
-const Order = require('../models/Order');
-const Review = require('../models/Review');
-const Wishlist = require('../models/Wishlist');
-const Notification = require('../models/Notification');
-const SupportTicket = require('../models/SupportTicket');
-const AuditLog = require('../models/AuditLog');
-const Banner = require('../models/Banner');
+const User = require('../src/features/users/user.model');
+const Category = require('../src/features/categories/category.model');
+const Product = require('../src/features/products/product.model');
+const Brand = require('../src/features/brands/brand.model');
+const Voucher = require('../src/features/vouchers/voucher.model');
+const Cart = require('../src/features/cart/cart.model');
+const Order = require('../src/features/orders/order.model');
+const Review = require('../src/features/reviews/review.model');
+const Wishlist = require('../src/features/wishlist/wishlist.model');
+const Notification = require('../src/features/notifications/notification.model');
+const SupportTicket = require('../src/features/tickets/ticket.model');
+const AuditLog = require('../src/features/audit/audit.model');
+const Banner = require('../src/features/banners/banner.model');
 
-const connectDB = require('../config/db');
+const connectDB = require('../src/config/db');
 
 const categories = [
   { name: 'Điện thoại iPhone', description: 'Các dòng iPhone chính hãng VN/A cao cấp', image: '' },
