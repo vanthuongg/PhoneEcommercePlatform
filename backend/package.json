@@ -1,7 +1,7 @@
 {
-  "name": "ecommerce-backend",
+  "name": "phone-ecommerce-platform-backend",
   "version": "1.0.0",
-  "description": "E-commerce backend API",
+  "description": "PhoneEcommercePlatform backend API service",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
